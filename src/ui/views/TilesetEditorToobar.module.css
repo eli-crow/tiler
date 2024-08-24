@@ -1,0 +1,27 @@
+.root {
+  grid-area: bottom-bar;
+  display: flex;
+  flex: 1 0 0;
+  background-color: var(--bg-surface);
+  border-radius: 12px;
+  padding: 12px;
+  gap: 8px;
+}
+
+.tool {
+  aspect-ratio: 1;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  appearance: none;
+  border: 0;
+  background-color: transparent;
+  border-radius: 8px;
+}
+.tool:hover {
+  background-color: var(--bg-surface-active);
+}
+.tool[data-active="true"] {
+  background-color: var(--bg-surface-active);
+}

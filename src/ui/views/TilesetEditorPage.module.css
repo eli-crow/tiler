@@ -1,0 +1,12 @@
+.root {
+  flex: 1 0 0;
+  display: grid;
+  grid-template:
+    "tileset-editor" 1fr
+    "bottom-bar" auto
+    / 1fr;
+  align-content: center;
+  justify-items: center;
+  align-items: center;
+  padding: 16px;
+}
