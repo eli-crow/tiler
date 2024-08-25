@@ -1,3 +1,7 @@
+import { EraserTool } from "./tools/EraserTool";
+import { PencilTool } from "./tools/PencilTool";
+import { TileTool } from "./tools/TileTool";
+
 export type Tile = {
   x: number;
   y: number;
@@ -28,3 +32,5 @@ export type TileGrid = Tile[][];
 export type TilesetChangedCallback = () => void;
 
 export type RGBA = [r: number, g: number, b: number, a: number];
+
+export type TilesetEditorTool = PencilTool | TileTool | EraserTool;

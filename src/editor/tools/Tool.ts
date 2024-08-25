@@ -1,13 +1,13 @@
+import { BaseTilesetEditor } from "../BaseTilesetEditor";
 import { EventEmitter } from "../events/EventEmitter";
-import { TilesetEditor } from "../TilesetEditor";
 
 interface ToolEvents {
   changed(): void;
 }
 
-export class Tool {
+export class Tool<Requirements = object> {
   #emitter = new EventEmitter<ToolEvents>();
-  editor: TilesetEditor = null!;
+  editor: BaseTilesetEditor & Requirements = null!;
 
   onPointerDown(_x: number, _y: number, _e: PointerEvent) {}
   onPointerMove(_x: number, _y: number, _e: PointerEvent) {}

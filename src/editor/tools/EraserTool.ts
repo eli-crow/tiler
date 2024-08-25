@@ -12,7 +12,7 @@ type ToolState =
   | { type: "down"; downX: number; downY: number }
   | { type: "dragging"; lastMoveX: number; lastMoveY: number };
 
-export class EraserTool extends Tool {
+export class EraserTool extends Tool<SupportsEraserTool> {
   #state: ToolState = { type: "idle" };
   #color: RGBA = [0, 0, 0, 0];
 

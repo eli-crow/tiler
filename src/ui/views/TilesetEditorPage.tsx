@@ -1,11 +1,11 @@
-import { TilesetEditor as RawTilesetEditor } from "../../editor/TilesetEditor";
-import { Tileset4x4Plus } from "../../editor/tileset/Tileset4x4Plus";
+import { Tileset4x4PlusEditor } from "../../editor/Tileset4x4PlusEditor";
+import { Tileset4x4JigsawEditor as RawTilesetEditor } from "../../editor/Tileset4x4PlusJigsawEditor";
 import { TileEditorProvider } from "../providers/TilesetEditorProvider";
 import { TilesetEditor } from "./TilesetEditor";
 import classes from "./TilesetEditorPage.module.css";
 import { TilesetEditorToolbar } from "./TilesetEditorToobar";
 
-const tileset = new Tileset4x4Plus();
+const tileset = new Tileset4x4PlusEditor();
 const editor = new RawTilesetEditor(tileset);
 
 export function TilesetEditorPage() {

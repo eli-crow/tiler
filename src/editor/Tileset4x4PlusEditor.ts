@@ -1,43 +1,23 @@
-import { createTile, RGBA, Tile, TileGrid, TileInnerCorner, TilesetChangedCallback } from "../model";
-import sampleImage from "./sample4x4Plus.png";
+import sampleImage from "../assets/sample4x4Plus.png";
+import { BaseTilesetEditor } from "./BaseTilesetEditor";
+import { createTile, RGBA, Tile, TileGrid, TileInnerCorner } from "./model";
+import { EraserTool, SupportsEraserTool } from "./tools/EraserTool";
+import { PencilTool, SupportsPencilTool } from "./tools/PencilTool";
 
 const TILE_COLUMNS = 5;
 const TILE_ROWS = 4;
 
-export class Tileset4x4Plus {
-  #canvas: OffscreenCanvas;
-  #context: OffscreenCanvasRenderingContext2D;
-  #changedSubscriptions = new Set<TilesetChangedCallback>();
-  #tileSize = 16;
-
-  get tileSize() {
-    return this.#tileSize;
-  }
-
+export class Tileset4x4PlusEditor
+  extends BaseTilesetEditor<PencilTool | EraserTool>
+  implements SupportsPencilTool, SupportsEraserTool
+{
   constructor() {
-    this.#canvas = new OffscreenCanvas(this.tileSize * TILE_COLUMNS, this.#tileSize * TILE_ROWS);
-
-    const context = this.#canvas.getContext("2d", {
-      willReadFrequently: true,
-      alpha: true,
-    });
-    if (!context) {
-      throw new Error("Could not get 2D context");
-    }
-    this.#context = context;
-    this.setFromImageURL(sampleImage);
+    super(16, TILE_COLUMNS, TILE_ROWS, new PencilTool());
+    this.drawImageURL(sampleImage);
   }
 
-  subscribe(callback: TilesetChangedCallback) {
-    this.#changedSubscriptions.add(callback);
-  }
-
-  unsubscribe(callback: TilesetChangedCallback) {
-    this.#changedSubscriptions.delete(callback);
-  }
-
-  setPixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
-    const size = this.#tileSize;
+  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
+    const size = this.tileSize;
 
     let isInnerTR = false;
     let isInnerBR = false;
@@ -67,33 +47,12 @@ export class Tileset4x4Plus {
     ) {
       this.#setCornerTilePixel(offsetX, offsetY, color);
     } else {
-      const x = tile.x * size + offsetX;
-      const y = tile.y * size + offsetY;
-      this.#setPixel(x, y, color);
+      super.setTilePixel(tile, offsetX, offsetY, color);
     }
   }
 
-  setFromImageURL(url: string) {
-    return new Promise<void>((resolve) => {
-      const image = new Image();
-      image.onload = () => {
-        this.setFromImageSource(image);
-        resolve();
-      };
-      image.src = url;
-    });
-  }
-
-  setFromImageSource(image: CanvasImageSource) {
-    this.#clear();
-    this.#context.drawImage(image, 0, 0);
-    this.#notifyChanged();
-  }
-
   getTileImageData(tile: Tile): ImageData {
-    const targetStartX = tile.x * this.#tileSize;
-    const targetStartY = tile.y * this.#tileSize;
-    const data = this.#context.getImageData(targetStartX, targetStartY, this.#tileSize, this.#tileSize);
+    const data = super.getTileImageData(tile);
     tile.corners.forEach((corner) => this.#applyCorner(data, corner));
     return data;
   }
@@ -102,40 +61,27 @@ export class Tileset4x4Plus {
     return GODOT_TILES;
   }
 
-  #clear() {
-    this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
-  }
-
-  #setPixel(x: number, y: number, color: RGBA) {
-    const imageData = this.#context.createImageData(1, 1);
-    imageData.data.set(color);
-    this.#context.putImageData(imageData, x, y);
-    this.#notifyChanged();
-  }
-
   #setCornerTilePixel(offsetX: number, offsetY: number, color: RGBA) {
-    const x = 4 * this.#tileSize + offsetX;
-    const y = 0 * this.#tileSize + offsetY;
-    this.#setPixel(x, y, color);
-  }
-
-  #notifyChanged() {
-    this.#changedSubscriptions.forEach((callback) => callback());
+    const x = 4 * this.tileSize + offsetX;
+    const y = 0 * this.tileSize + offsetY;
+    this.setPixel(x, y, color);
   }
 
   #getCornerImageData(corner: TileInnerCorner) {
+    const size = this.tileSize;
+
     let offsetX: number;
     let offsetY: number;
 
     if (corner === "tr") {
-      offsetX = this.#tileSize / 2;
+      offsetX = size / 2;
       offsetY = 0;
     } else if (corner === "bl") {
       offsetX = 0;
-      offsetY = this.#tileSize / 2;
+      offsetY = size / 2;
     } else if (corner === "br") {
-      offsetX = this.#tileSize / 2;
-      offsetY = this.#tileSize / 2;
+      offsetX = size / 2;
+      offsetY = size / 2;
     } else if (corner === "tl") {
       offsetX = 0;
       offsetY = 0;
@@ -143,14 +89,14 @@ export class Tileset4x4Plus {
       throw new Error("Invalid corner");
     }
 
-    const cornerTileStartX = 4 * this.#tileSize;
+    const cornerTileStartX = 4 * size;
     const cornerTileStartY = 0;
 
-    const imageData = this.#context.getImageData(
+    const imageData = this.context.getImageData(
       cornerTileStartX + offsetX,
       cornerTileStartY + offsetY,
-      this.#tileSize / 2,
-      this.#tileSize / 2
+      size / 2,
+      size / 2
     );
 
     return {
@@ -161,6 +107,8 @@ export class Tileset4x4Plus {
   }
 
   #applyCorner(targetImageData: ImageData, corner: TileInnerCorner) {
+    const size = this.tileSize;
+
     const {
       offsetX,
       offsetY,
@@ -169,10 +117,10 @@ export class Tileset4x4Plus {
 
     const { data: target } = targetImageData;
 
-    for (let y = 0; y < this.#tileSize / 2; y++) {
-      for (let x = 0; x < this.#tileSize / 2; x++) {
-        const si = (y * (this.#tileSize / 2) + x) * 4;
-        const ti = ((y + offsetY) * this.#tileSize + x + offsetX) * 4;
+    for (let y = 0; y < size / 2; y++) {
+      for (let x = 0; x < size / 2; x++) {
+        const si = (y * (size / 2) + x) * 4;
+        const ti = ((y + offsetY) * size + x + offsetX) * 4;
         target[ti] = source[si];
         target[ti + 1] = source[si + 1];
         target[ti + 2] = source[si + 2];

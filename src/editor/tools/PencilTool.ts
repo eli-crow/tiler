@@ -12,7 +12,7 @@ type ToolState =
   | { type: "down"; downX: number; downY: number }
   | { type: "dragging"; lastMoveX: number; lastMoveY: number };
 
-export class PencilTool extends Tool {
+export class PencilTool extends Tool<SupportsPencilTool> {
   #state: ToolState = { type: "idle" };
   #color: RGBA = [255, 255, 255, 255];
 

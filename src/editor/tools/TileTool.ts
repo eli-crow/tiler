@@ -9,7 +9,7 @@ export type SupportsTileTool = {
 
 type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
-export class TileTool extends Tool {
+export class TileTool extends Tool<SupportsTileTool> {
   #state: ToolState = { type: "idle" };
   #tile: Tile = { x: 0, y: 0, corners: [] };
 
