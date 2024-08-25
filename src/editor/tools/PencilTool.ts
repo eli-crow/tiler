@@ -37,6 +37,10 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     this.notifyChanged();
   }
 
+  private get resolvedColor() {
+    return this.#erase ? TRANSPARENT : this.#color;
+  }
+
   constructor(erase: boolean = false) {
     super();
     this.#erase = erase;
@@ -47,7 +51,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
       return;
     }
     if (this.#state.type === "idle") {
-      this.tileset.setPixel(x, y, this.#color);
+      this.tileset.setPixel(x, y, this.resolvedColor);
       this.#state = { type: "down", downX: x, downY: y };
       this.tileset.invalidate();
     }
@@ -66,6 +70,9 @@ export class PencilTool extends Tool<SupportsPencilTool> {
       const { lastMoveX, lastMoveY } = this.#state;
       let currentX = lastMoveX;
       let currentY = lastMoveY;
+
+      this.tileset.setPixel(currentX, currentY, this.resolvedColor);
+
       while (true) {
         const deltaX = x - currentX;
         const deltaY = y - currentY;
@@ -77,7 +84,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
         currentX += deltaX / distance;
         currentY += deltaY / distance;
 
-        this.tileset.setPixel(currentX, currentY, this.erase ? TRANSPARENT : this.#color);
+        this.tileset.setPixel(currentX, currentY, this.resolvedColor);
       }
 
       this.tileset.invalidate();
