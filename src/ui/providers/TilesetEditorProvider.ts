@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
-import { BaseTilesetEditor } from "../../editor/BaseTilesetEditor";
+import { TilesetEditor } from "../../editor/TilesetEditor";
 
-const TileEditorContext = createContext<BaseTilesetEditor>(null as never);
+const TileEditorContext = createContext<TilesetEditor>(null as never);
 export const TileEditorProvider = TileEditorContext.Provider;
 
 export function useTilesetEditor() {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTilesetEditor } from "../providers/TilesetEditorProvider";
-import classes from "./TilesetEditor.module.css";
+import classes from "./TilesetEditorView.module.css";
 
-export function TilesetEditor() {
+export function TilesetEditorView() {
   const editor = useTilesetEditor();
 
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);

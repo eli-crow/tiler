@@ -3,7 +3,7 @@ import { PencilTool } from "../../editor/tools/PencilTool";
 import { TileTool } from "../../editor/tools/TileTool";
 import { useTilesetEditor } from "../providers/TilesetEditorProvider";
 import { PencilToolEditor } from "./PencilToolEditor";
-import classes from "./TilesetEditorToobar.module.css";
+import classes from "./TilesetEditorTools.module.css";
 
 export function TilesetEditorToolbar() {
   const editor = useTilesetEditor();

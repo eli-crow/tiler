@@ -1,0 +1,5 @@
+.root {
+  min-width: 0;
+  display: flex;
+  position: relative;
+}

@@ -2,6 +2,11 @@ import { EraserTool } from "./tools/EraserTool";
 import { PencilTool } from "./tools/PencilTool";
 import { TileTool } from "./tools/TileTool";
 
+export type PixelPoint = {
+  x: number;
+  y: number;
+};
+
 export type Tile = {
   x: number;
   y: number;

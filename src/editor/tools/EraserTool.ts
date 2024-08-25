@@ -21,7 +21,7 @@ export class EraserTool extends Tool<SupportsEraserTool> {
       return;
     }
     if (this.#state.type === "idle") {
-      this.editor.setPixel(x, y, this.#color);
+      this.tileset.setPixel(x, y, this.#color);
       this.#state = { type: "down", downX: x, downY: y };
     }
   }
@@ -49,7 +49,7 @@ export class EraserTool extends Tool<SupportsEraserTool> {
 
         currentX += deltaX / distance;
         currentY += deltaY / distance;
-        this.editor.setPixel(currentX, currentY, this.#color);
+        this.tileset.setPixel(currentX, currentY, this.#color);
       }
 
       this.#state.lastMoveX = currentX;

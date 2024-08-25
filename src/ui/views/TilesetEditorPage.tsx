@@ -1,13 +1,18 @@
 import { useState } from "react";
-import { Tileset4x4PlusEditor } from "../../editor/Tileset4x4PlusEditor";
-import { Tileset4x4JigsawEditor as RawTilesetEditor } from "../../editor/Tileset4x4PlusJigsawEditor";
+import { Tileset4x4Plus } from "../../editor/tileset/Tileset4x4Plus";
+import { Tileset4x4PlusToGodot } from "../../editor/tileset/Tileset4x4PlusToGodot";
+import { TilesetEditor } from "../../editor/TilesetEditor";
+import { PencilTool } from "../../editor/tools/PencilTool";
 import { TileEditorProvider } from "../providers/TilesetEditorProvider";
-import { TilesetEditor } from "./TilesetEditor";
 import classes from "./TilesetEditorPage.module.css";
-import { TilesetEditorToolbar } from "./TilesetEditorToobar";
+import { TilesetEditorToolbar } from "./TilesetEditorTools";
+import { TilesetEditorView } from "./TilesetEditorView";
 
-const editor4x4Plus = new Tileset4x4PlusEditor();
-const editor4x4PlusJigsaw = new RawTilesetEditor(editor4x4Plus);
+const tileset4x4Plus = new Tileset4x4Plus();
+const tileset4x4PlusToGodot = new Tileset4x4PlusToGodot(tileset4x4Plus);
+
+const editor4x4Plus = new TilesetEditor(tileset4x4Plus, new PencilTool());
+const editor4x4PlusJigsaw = new TilesetEditor(tileset4x4PlusToGodot, new PencilTool());
 
 export function TilesetEditorPage() {
   const [editorType, setEditorType] = useState<"raw" | "jigsaw">("raw");
@@ -19,7 +24,7 @@ export function TilesetEditorPage() {
         <button onClick={() => setEditorType("jigsaw")}>Jigsaw</button>
       </div>
       <TileEditorProvider value={editorType === "raw" ? editor4x4Plus : editor4x4PlusJigsaw}>
-        <TilesetEditor />
+        <TilesetEditorView />
         <TilesetEditorToolbar />
       </TileEditorProvider>
     </div>
