@@ -32,7 +32,7 @@ export type ReadonlyTileGrid = readonly (readonly Tile[])[];
 
 export type TilesetChangedCallback = () => void;
 
-export type RGBA = { r: number; g: number; b: number; a: number };
+export type RGBA = [r: number, g: number, b: number, a: number];
 
 export type SupportsPencilTool = {
   setPixel(x: number, y: number, color: RGBA): void;

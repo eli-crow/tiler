@@ -2,9 +2,8 @@
   flex: 1 0 0;
   display: grid;
   grid-template:
-    "tileset-editor" 1fr
-    "bottom-bar" auto
-    / 1fr;
+    "tileset-editor sidebar-right" 1fr
+    / 1fr 280px;
   align-content: center;
   justify-items: center;
   align-items: center;

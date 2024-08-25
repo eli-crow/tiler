@@ -16,7 +16,11 @@ export class TileTool extends Tool {
     this.notifyChanged();
   }
 
-  onPointerDown(x: number, y: number) {
+  onPointerDown(x: number, y: number, event: PointerEvent) {
+    if (event.button !== 0) {
+      return;
+    }
+
     if (this.#state.type === "idle") {
       const { x: tileX, y: tileY } = this.editor.getTileLocationAtPoint(x, y);
       this.editor.setTile(tileX, tileY, this.tile);

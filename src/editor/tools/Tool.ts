@@ -10,9 +10,9 @@ export class Tool {
 
   #emitter = new EventEmitter<ToolEvents>();
 
-  onPointerDown(_x: number, _y: number) {}
-  onPointerMove(_x: number, _y: number) {}
-  onPointerUp(_x: number, _y: number) {}
+  onPointerDown(_x: number, _y: number, _e: PointerEvent) {}
+  onPointerMove(_x: number, _y: number, _e: PointerEvent) {}
+  onPointerUp(_x: number, _y: number, _e: PointerEvent) {}
 
   constructor(editor: TilesetEditor) {
     this.editor = editor;

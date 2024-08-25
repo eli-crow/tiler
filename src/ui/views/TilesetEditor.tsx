@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTilesetEditor } from "../providers/TilesetEditorProvider";
+import classes from "./TilesetEditor.module.css";
 
 export function TilesetEditor() {
   const editor = useTilesetEditor();
@@ -15,5 +16,5 @@ export function TilesetEditor() {
     }
   }, [containerEl, editor]);
 
-  return <div ref={setContainerEl} />;
+  return <div ref={setContainerEl} className={classes.root} />;
 }

@@ -8,7 +8,7 @@ type ToolState =
 
 export class PencilTool extends Tool {
   #state: ToolState = { type: "idle" };
-  #color: RGBA = { r: 255, g: 255, b: 255, a: 255 };
+  #color: RGBA = [255, 255, 255, 255];
 
   get color() {
     return this.#color;
@@ -19,14 +19,17 @@ export class PencilTool extends Tool {
     this.notifyChanged();
   }
 
-  onPointerDown(x: number, y: number) {
+  onPointerDown(x: number, y: number, event: PointerEvent) {
+    if (event.button !== 0) {
+      return;
+    }
     if (this.#state.type === "idle") {
       this.editor.setPixel(x, y, this.#color);
       this.#state = { type: "down", downX: x, downY: y };
     }
   }
 
-  onPointerMove(x: number, y: number) {
+  onPointerMove(x: number, y: number, event: PointerEvent) {
     if (this.#state.type === "idle") {
       return;
     }
@@ -57,7 +60,7 @@ export class PencilTool extends Tool {
     }
   }
 
-  onPointerUp(_x: number, _y: number) {
+  onPointerUp(_x: number, _y: number, _event: PointerEvent) {
     this.#state = { type: "idle" };
   }
 }

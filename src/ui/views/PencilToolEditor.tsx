@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { RgbaColorPicker } from "react-colorful";
 import { RGBA } from "../../editor/model";
 import { PencilTool } from "../../editor/tools/PencilTool";
+import { ColorPicker } from "../components/ColorPicker";
 
 interface PencilToolEditor {
   tool: PencilTool;
@@ -15,9 +15,5 @@ export function PencilToolEditor({ tool }: PencilToolEditor) {
     _setColor(color);
   }
 
-  return (
-    <div>
-      <RgbaColorPicker color={color} onChange={setColor} />
-    </div>
-  );
+  return <ColorPicker color={color} onChange={setColor} />;
 }

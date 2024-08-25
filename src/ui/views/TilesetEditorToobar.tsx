@@ -21,24 +21,26 @@ export function TilesetEditorToolbar() {
 
   return (
     <div className={classes.root}>
-      <button
-        className={classes.tool}
-        data-active={tool === pencilTool.current}
-        onClick={() => {
-          setTool(pencilTool.current);
-        }}
-      >
-        ✏️
-      </button>
-      <button
-        className={classes.tool}
-        data-active={tool === tileTool.current}
-        onClick={() => {
-          setTool(tileTool.current);
-        }}
-      >
-        🀄
-      </button>
+      <div className={classes.toolGroup}>
+        <button
+          className={classes.tool}
+          data-active={tool === pencilTool.current}
+          onClick={() => {
+            setTool(pencilTool.current);
+          }}
+        >
+          ✏️
+        </button>
+        <button
+          className={classes.tool}
+          data-active={tool === tileTool.current}
+          onClick={() => {
+            setTool(tileTool.current);
+          }}
+        >
+          🀄
+        </button>
+      </div>
       {tool instanceof PencilTool && <PencilToolEditor tool={tool} />}
     </div>
   );

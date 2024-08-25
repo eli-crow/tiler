@@ -127,17 +127,17 @@ export class TilesetEditor implements SupportsPencilTool, SupportsTileTool {
 
   #handlePointerDown = (event: PointerEvent) => {
     const { x, y } = this.#getCanvasPositionFromEvent(event);
-    this.#tool.onPointerDown(x, y);
+    this.#tool.onPointerDown(x, y, event);
   };
 
   #handlePointerMove = (event: PointerEvent) => {
     const { x, y } = this.#getCanvasPositionFromEvent(event);
-    this.#tool.onPointerMove(x, y);
+    this.#tool.onPointerMove(x, y, event);
   };
 
   #handlePointerUp = (event: PointerEvent) => {
     const { x, y } = this.#getCanvasPositionFromEvent(event);
-    this.#tool.onPointerUp(x, y);
+    this.#tool.onPointerUp(x, y, event);
   };
 
   #draw() {

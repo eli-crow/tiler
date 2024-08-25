@@ -108,7 +108,7 @@ export class Tileset4x4Plus {
 
   #setPixel(x: number, y: number, color: RGBA) {
     const imageData = this.#context.createImageData(1, 1);
-    imageData.data.set([color.r, color.g, color.b, color.a]);
+    imageData.data.set(color);
     this.#context.putImageData(imageData, x, y);
     this.#notifyChanged();
   }
