@@ -1,6 +1,12 @@
 import { Tile } from "../model";
 import { Tool } from "./Tool";
 
+export type SupportsTileTool = {
+  setTile(x: number, y: number, tile: Tile): void;
+  get tool(): Tool;
+  set tool(tool: TileTool);
+};
+
 type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
 export class TileTool extends Tool {

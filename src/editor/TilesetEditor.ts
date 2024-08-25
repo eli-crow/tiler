@@ -1,8 +1,9 @@
 import { EventEmitter } from "./events/EventEmitter";
-import { RGBA, SupportsPencilTool, SupportsTileTool, Tile, TileGrid, tilesMatch } from "./model";
+import { RGBA, Tile, TileGrid, tilesMatch } from "./model";
 import { Tileset4x4Plus } from "./tileset/Tileset4x4Plus";
-import { PencilTool } from "./tools/PencilTool";
-import { TileTool } from "./tools/TileTool";
+import { EraserTool, SupportsEraserTool } from "./tools/EraserTool";
+import { PencilTool, SupportsPencilTool } from "./tools/PencilTool";
+import { SupportsTileTool, TileTool } from "./tools/TileTool";
 
 const CSS_SCALE = 6;
 
@@ -10,9 +11,9 @@ interface TileEditorEvents {
   toolChanged(): void;
 }
 
-export type TilesetEditorTool = PencilTool | TileTool;
+export type TilesetEditorTool = PencilTool | TileTool | EraserTool;
 
-export class TilesetEditor implements SupportsPencilTool, SupportsTileTool {
+export class TilesetEditor implements SupportsPencilTool, SupportsTileTool, SupportsEraserTool {
   #canvas: HTMLCanvasElement;
   #context: CanvasRenderingContext2D;
   #tiles: TileGrid;
@@ -26,6 +27,7 @@ export class TilesetEditor implements SupportsPencilTool, SupportsTileTool {
   }
 
   set tool(tool: TilesetEditorTool) {
+    tool.editor = this;
     this.#tool = tool;
     this.#emitter.emit("toolChanged");
   }
@@ -54,7 +56,7 @@ export class TilesetEditor implements SupportsPencilTool, SupportsTileTool {
     }
     this.#context = context;
 
-    this.#tool = new TileTool(this);
+    this.#tool = this.tool = new TileTool();
 
     this.#handleResize();
     this.#draw();

@@ -1,10 +1,10 @@
 import { RGBA } from "../model";
 import { Tool } from "./Tool";
 
-export type SupportsPencilTool = {
+export type SupportsEraserTool = {
   setPixel(x: number, y: number, color: RGBA): void;
   get tool(): Tool;
-  set tool(tool: PencilTool);
+  set tool(tool: EraserTool);
 };
 
 type ToolState =
@@ -12,18 +12,9 @@ type ToolState =
   | { type: "down"; downX: number; downY: number }
   | { type: "dragging"; lastMoveX: number; lastMoveY: number };
 
-export class PencilTool extends Tool {
+export class EraserTool extends Tool {
   #state: ToolState = { type: "idle" };
-  #color: RGBA = [255, 255, 255, 255];
-
-  get color() {
-    return this.#color;
-  }
-
-  set color(value: RGBA) {
-    this.#color = value;
-    this.notifyChanged();
-  }
+  #color: RGBA = [0, 0, 0, 0];
 
   onPointerDown(x: number, y: number, event: PointerEvent) {
     if (event.button !== 0) {
