@@ -2,6 +2,8 @@ import { useState } from "react";
 import { RGBA } from "../../editor/model";
 import { PencilTool } from "../../editor/tools/PencilTool";
 import { ColorPicker } from "../components/ColorPicker";
+import { SwatchCollectionEditor } from "../components/SwatchCollectionEditor";
+import classes from "./PencilToolEditor.module.css";
 
 interface PencilToolEditor {
   tool: PencilTool;
@@ -15,5 +17,10 @@ export function PencilToolEditor({ tool }: PencilToolEditor) {
     _setColor(color);
   }
 
-  return <ColorPicker color={color} onChange={setColor} />;
+  return (
+    <div className={classes.root}>
+      <ColorPicker color={color} onChange={setColor} />
+      <SwatchCollectionEditor onSelect={setColor} />
+    </div>
+  );
 }

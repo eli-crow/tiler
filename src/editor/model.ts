@@ -24,7 +24,6 @@ export function createTile(x: number, y: number, corners: readonly TileInnerCorn
 }
 
 export type TileGrid = Tile[][];
-export type ReadonlyTileGrid = readonly (readonly Tile[])[];
 
 export type TilesetChangedCallback = () => void;
 

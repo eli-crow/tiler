@@ -1,0 +1,10 @@
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.swatchGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+  gap: 1px;
+}
