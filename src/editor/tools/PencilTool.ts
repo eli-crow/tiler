@@ -1,6 +1,8 @@
 import { RGBA } from "../model";
 import { Tool } from "./Tool";
 
+const TRANSPARENT: RGBA = [0, 0, 0, 0];
+
 export type SupportsPencilTool = {
   setPixel(x: number, y: number, color: RGBA): void;
   get tool(): Tool;
@@ -15,6 +17,7 @@ type ToolState =
 export class PencilTool extends Tool<SupportsPencilTool> {
   #state: ToolState = { type: "idle" };
   #color: RGBA = [255, 255, 255, 255];
+  #erase = false;
 
   get color() {
     return this.#color;
@@ -25,6 +28,20 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     this.notifyChanged();
   }
 
+  get erase() {
+    return this.#erase;
+  }
+
+  set erase(value: boolean) {
+    this.#erase = value;
+    this.notifyChanged();
+  }
+
+  constructor(erase: boolean = false) {
+    super();
+    this.#erase = erase;
+  }
+
   onPointerDown(x: number, y: number, event: PointerEvent) {
     if (event.button !== 0) {
       return;
@@ -32,6 +49,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     if (this.#state.type === "idle") {
       this.tileset.setPixel(x, y, this.#color);
       this.#state = { type: "down", downX: x, downY: y };
+      this.tileset.invalidate();
     }
   }
 
@@ -58,8 +76,11 @@ export class PencilTool extends Tool<SupportsPencilTool> {
 
         currentX += deltaX / distance;
         currentY += deltaY / distance;
-        this.tileset.setPixel(currentX, currentY, this.#color);
+
+        this.tileset.setPixel(currentX, currentY, this.erase ? TRANSPARENT : this.#color);
       }
+
+      this.tileset.invalidate();
 
       this.#state.lastMoveX = currentX;
       this.#state.lastMoveY = currentY;

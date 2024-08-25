@@ -1,4 +1,3 @@
-import { EraserTool } from "../../editor/tools/EraserTool";
 import { PencilTool } from "../../editor/tools/PencilTool";
 import { TileTool } from "../../editor/tools/TileTool";
 import { useTilesetEditor } from "../providers/TilesetEditorProvider";
@@ -13,15 +12,15 @@ export function TilesetEditorToolbar() {
       <div className={classes.toolGroup}>
         <button
           className={classes.tool}
-          data-active={editor.tool instanceof PencilTool}
+          data-active={editor.tool instanceof PencilTool && !editor.tool.erase}
           onClick={() => (editor.tool = new PencilTool())}
         >
           ✏️
         </button>
         <button
           className={classes.tool}
-          data-active={editor.tool instanceof EraserTool}
-          onClick={() => (editor.tool = new EraserTool())}
+          data-active={editor.tool instanceof PencilTool && editor.tool.erase}
+          onClick={() => (editor.tool = new PencilTool(true))}
         >
           🧽
         </button>
@@ -33,7 +32,8 @@ export function TilesetEditorToolbar() {
           🀄
         </button>
       </div>
-      {editor.tool instanceof PencilTool && <PencilToolEditor tool={editor.tool} />}
+
+      {editor.tool instanceof PencilTool && !editor.tool.erase && <PencilToolEditor tool={editor.tool} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { createTile, RGBA, Tile, TileGrid, tilesMatch } from "../model";
+import { createTile, RGBA, Tile, TileGrid, TileInnerCorner, TilePosition, tilesMatch } from "../model";
 import { BaseTileset } from "./BaseTileset";
 import { Tileset4x4Plus } from "./Tileset4x4Plus";
 
@@ -13,7 +13,18 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
 
     this.#tiles = tiles;
     this.#tileset = tileset;
-    tileset.on("dataChanged", this.#handleTilesetChanged);
+    tileset.on("dataChanged", this.#handleTilesetDataChanged);
+  }
+
+  invalidate() {
+    this.#tileset.invalidate();
+    this.emit("dataChanged");
+  }
+
+  getTileImageData(tile: Tile): ImageData {
+    const data = this.#tileset.getTileImageData(tile);
+    tile.corners.forEach((corner) => this.#applyInnerCorner(data, corner));
+    return data;
   }
 
   getTileAtPoint(x: number, y: number): Tile | null {
@@ -30,35 +41,143 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
     if (!tile) {
       return;
     }
-    const offsetX = x % this.#tileset.tileSize;
-    const offsetY = y % this.#tileset.tileSize;
-    this.#tileset.setTilePixel(tile, offsetX, offsetY, color);
-    this.onDataChanged();
+    const offsetX = x % this.tileSize;
+    const offsetY = y % this.tileSize;
+    this.setTilePixel(tile, offsetX, offsetY, color);
   }
 
-  setTile(x: number, y: number, tile: Tile) {
-    const existingTile = this.#tiles[y][x];
-    if (tilesMatch(existingTile, tile)) {
+  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
+    const size = this.tileSize;
+
+    let isInnerTR = false;
+    let isInnerBR = false;
+    let isInnerBL = false;
+    let isInnerTL = false;
+    tile.corners.forEach((corner) => {
+      if (corner === "tr") {
+        isInnerTR = true;
+      } else if (corner === "br") {
+        isInnerBR = true;
+      } else if (corner === "bl") {
+        isInnerBL = true;
+      } else if (corner === "tl") {
+        isInnerTL = true;
+      }
+    });
+
+    const isLeft = offsetX < size / 2;
+    const isTop = offsetY < size / 2;
+    const isRight = !isLeft;
+    const isBottom = !isTop;
+    if (
+      (isInnerTR && isTop && isRight) ||
+      (isInnerBR && isBottom && isRight) ||
+      (isInnerBL && isBottom && isLeft) ||
+      (isInnerTL && isTop && isLeft)
+    ) {
+      this.#setInnerCornerTilePixel(offsetX, offsetY, color);
+    } else {
+      const size = this.tileSize;
+      const x = tile.x * size + offsetX;
+      const y = tile.y * size + offsetY;
+      this.#tileset.setPixel(x, y, color);
+    }
+  }
+
+  getTile(position: TilePosition): Tile | null {
+    return this.#tiles[position.y]?.[position.x] ?? null;
+  }
+
+  setTile(position: TilePosition, tile: Tile) {
+    const existingTile = this.getTile(position);
+    if (existingTile && tilesMatch(existingTile, tile)) {
       return;
     }
-    this.#tiles[y][x] = tile;
-    this.draw();
+    this.#tiles[position.y][position.x] = tile;
   }
 
-  #handleTilesetChanged = () => {
-    this.draw();
-  };
-
-  draw() {
+  #draw() {
     this.context.clearRect(0, 0, this.width, this.height);
     this.#tiles.forEach((row, y) => {
       row.forEach((tile, x) => {
-        const imageData = this.#tileset.getTileImageData(tile);
-        const targetX = x * this.#tileset.tileSize;
-        const targetY = y * this.#tileset.tileSize;
+        const imageData = this.getTileImageData(tile);
+        const targetX = x * this.tileSize;
+        const targetY = y * this.tileSize;
         this.context.putImageData(imageData, targetX, targetY);
       });
     });
+  }
+
+  #handleTilesetDataChanged = () => {
+    this.#draw();
+  };
+
+  #setInnerCornerTilePixel(offsetX: number, offsetY: number, color: RGBA) {
+    const x = 4 * this.tileSize + offsetX;
+    const y = 0 * this.tileSize + offsetY;
+    this.#tileset.setPixel(x, y, color);
+  }
+
+  #getInnerCornerImageData(corner: TileInnerCorner) {
+    const size = this.tileSize;
+
+    let offsetX: number;
+    let offsetY: number;
+
+    if (corner === "tr") {
+      offsetX = size / 2;
+      offsetY = 0;
+    } else if (corner === "bl") {
+      offsetX = 0;
+      offsetY = size / 2;
+    } else if (corner === "br") {
+      offsetX = size / 2;
+      offsetY = size / 2;
+    } else if (corner === "tl") {
+      offsetX = 0;
+      offsetY = 0;
+    } else {
+      throw new Error("Invalid corner");
+    }
+
+    const cornerTileStartX = 4 * size;
+    const cornerTileStartY = 0;
+
+    const imageData = this.#tileset.getImageData(
+      cornerTileStartX + offsetX,
+      cornerTileStartY + offsetY,
+      size / 2,
+      size / 2
+    );
+
+    return {
+      offsetX,
+      offsetY,
+      imageData,
+    };
+  }
+
+  #applyInnerCorner(imageData: ImageData, innerCorner: TileInnerCorner) {
+    const size = this.tileSize;
+
+    const {
+      offsetX,
+      offsetY,
+      imageData: { data: source },
+    } = this.#getInnerCornerImageData(innerCorner);
+
+    const { data: target } = imageData;
+
+    for (let y = 0; y < size / 2; y++) {
+      for (let x = 0; x < size / 2; x++) {
+        const si = (y * (size / 2) + x) * 4;
+        const ti = ((y + offsetY) * size + x + offsetX) * 4;
+        target[ti] = source[si];
+        target[ti + 1] = source[si + 1];
+        target[ti + 2] = source[si + 2];
+        target[ti + 3] = source[si + 3];
+      }
+    }
   }
 }
 

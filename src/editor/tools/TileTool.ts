@@ -33,6 +33,7 @@ export class TileTool extends Tool<SupportsTileTool> {
         return;
       }
       this.tileset.setTile(position.x, position.x, this.tile);
+      this.tileset.invalidate();
       this.#state = { type: "down" };
     }
   }
@@ -52,6 +53,7 @@ export class TileTool extends Tool<SupportsTileTool> {
         return;
       }
       this.tileset.setTile(position.x, position.y, this.tile);
+      this.tileset.invalidate();
     }
   }
 

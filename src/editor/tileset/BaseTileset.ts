@@ -14,6 +14,7 @@ export abstract class BaseTileset {
   readonly #emitter = new EventEmitter<Events>();
   readonly on: EventEmitter<Events>["on"] = this.#emitter.on.bind(this.#emitter);
   readonly off: EventEmitter<Events>["off"] = this.#emitter.off.bind(this.#emitter);
+  protected readonly emit: EventEmitter<Events>["emit"] = this.#emitter.emit.bind(this.#emitter);
 
   get width() {
     return this.#canvas.width;
@@ -54,7 +55,7 @@ export abstract class BaseTileset {
     this.setPixel(x, y, color);
   }
 
-  setFromImageURL(url: string) {
+  setFromImageUrlAsync(url: string) {
     return new Promise<void>((resolve) => {
       const image = new Image();
       image.onload = () => {
@@ -67,13 +68,13 @@ export abstract class BaseTileset {
 
   setFromImageSource(image: CanvasImageSource) {
     this.context.drawImage(image, 0, 0);
-    this.onDataChanged();
   }
 
   getTileImageData(tile: Tile): ImageData {
-    const targetStartX = tile.x * this.tileSize;
-    const targetStartY = tile.y * this.tileSize;
-    const data = this.context.getImageData(targetStartX, targetStartY, this.tileSize, this.tileSize);
+    const size = this.tileSize;
+    const x = tile.x * size;
+    const y = tile.y * size;
+    const data = this.context.getImageData(x, y, size, size);
     return data;
   }
 
@@ -81,10 +82,13 @@ export abstract class BaseTileset {
     const imageData = this.context.createImageData(1, 1);
     imageData.data.set(color);
     this.context.putImageData(imageData, x, y);
-    this.onDataChanged();
   }
 
-  protected onDataChanged() {
+  invalidate() {
     this.#emitter.emit("dataChanged");
+  }
+
+  getImageData(x: number, y: number, width: number, height: number): ImageData {
+    return this.context.getImageData(x, y, width, height);
   }
 }
