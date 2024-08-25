@@ -28,8 +28,11 @@ export class TileTool extends Tool<SupportsTileTool> {
     }
 
     if (this.#state.type === "idle") {
-      const { x: tileX, y: tileY } = this.tileset.getTilePositionAtPixel(x, y);
-      this.tileset.setTile(tileX, tileY, this.tile);
+      const position = this.tileset.getTilePositionAtPixel(x, y);
+      if (!position) {
+        return;
+      }
+      this.tileset.setTile(position.x, position.x, this.tile);
       this.#state = { type: "down" };
     }
   }
@@ -44,8 +47,11 @@ export class TileTool extends Tool<SupportsTileTool> {
     }
 
     if (this.#state.type === "dragging") {
-      const { x: tileX, y: tileY } = this.tileset.getTilePositionAtPixel(x, y);
-      this.tileset.setTile(tileX, tileY, this.tile);
+      const position = this.tileset.getTilePositionAtPixel(x, y);
+      if (!position) {
+        return;
+      }
+      this.tileset.setTile(position.x, position.y, this.tile);
     }
   }
 

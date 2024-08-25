@@ -1,5 +1,5 @@
 import { EventEmitter } from "../events/EventEmitter";
-import { RGBA, Tile } from "../model";
+import { RGBA, Tile, TilePosition } from "../model";
 
 interface Events {
   dataChanged(): void;
@@ -38,9 +38,12 @@ export abstract class BaseTileset {
     this.context.imageSmoothingEnabled = false;
   }
 
-  getTilePositionAtPixel(x: number, y: number) {
+  getTilePositionAtPixel(x: number, y: number): TilePosition | null {
     const tileX = Math.floor(x / this.tileSize);
     const tileY = Math.floor(y / this.tileSize);
+    if (tileX < 0 || tileX >= this.tileColumns || tileY < 0 || tileY >= this.tileRows) {
+      return null;
+    }
     return { x: tileX, y: tileY };
   }
 

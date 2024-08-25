@@ -13,6 +13,11 @@ export type Tile = {
   corners: readonly TileInnerCorner[];
 };
 
+export type TilePosition = {
+  x: number;
+  y: number;
+};
+
 export function tilesMatch(a: Tile, b: Tile): boolean {
   return (
     a.x === b.x &&

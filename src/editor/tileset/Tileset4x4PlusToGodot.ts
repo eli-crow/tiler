@@ -16,14 +16,20 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
     tileset.on("dataChanged", this.#handleTilesetChanged);
   }
 
-  getTileAtPoint(x: number, y: number) {
-    const { x: tileX, y: tileY } = this.getTilePositionAtPixel(x, y);
-    const tile = this.#tiles[tileY][tileX];
+  getTileAtPoint(x: number, y: number): Tile | null {
+    const position = this.getTilePositionAtPixel(x, y);
+    if (!position) {
+      return null;
+    }
+    const tile = this.#tiles[position.y][position.x];
     return tile;
   }
 
   setPixel(x: number, y: number, color: RGBA) {
     const tile = this.getTileAtPoint(x, y);
+    if (!tile) {
+      return;
+    }
     const offsetX = x % this.#tileset.tileSize;
     const offsetY = y % this.#tileset.tileSize;
     this.#tileset.setTilePixel(tile, offsetX, offsetY, color);

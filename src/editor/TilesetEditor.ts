@@ -53,6 +53,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#canvas.addEventListener("pointerdown", this.#handlePointerDown);
     this.#canvas.addEventListener("pointermove", this.#handlePointerMove);
     this.#canvas.addEventListener("pointerup", this.#handlePointerUp);
+    this.#canvas.addEventListener("wheel", this.#handleWheel);
 
     this.#context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true })!;
     this.#context.imageSmoothingEnabled = false;
@@ -115,6 +116,13 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   #handlePointerUp = (event: PointerEvent) => {
     const { x, y } = this.#getTilesetPixelFromEvent(event);
     this.#tool.onPointerUp(x, y, event);
+  };
+
+  #handleWheel = (event: WheelEvent) => {
+    event.preventDefault();
+    this.#viewX += event.deltaX / this.#viewZoom;
+    this.#viewY += event.deltaY / this.#viewZoom;
+    this.#draw();
   };
 
   #transformCanvasPointToTilesetPoint(point: PixelPoint): PixelPoint {
