@@ -135,14 +135,41 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   }
 
   #draw() {
-    this.#context.imageSmoothingEnabled = false;
+    this.#context.globalCompositeOperation = "source-over";
     this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+    this.#drawTileset();
+    this.#drawTileGuides();
+  }
+
+  #drawTileset() {
+    this.#context.imageSmoothingEnabled = false;
     this.#context.resetTransform();
     this.#context.translate(-this.viewX, -this.viewY);
     this.#context.translate(this.#canvas.width / 2, this.#canvas.height / 2);
     this.#context.scale(this.viewZoom, this.viewZoom);
     this.#context.translate(this.tileset.width / -2, this.tileset.height / -2);
     this.#context.drawImage(this.tileset.imageSource, 0, 0);
+  }
+
+  #drawTileGuides() {
+    const { width, height, tileSize } = this.tileset;
+    const context = this.#context;
+    context.resetTransform();
+    context.lineWidth = 1;
+    context.globalCompositeOperation = "color-dodge";
+    context.strokeStyle = "rgba(255, 0, 255, 0.5)";
+    context.beginPath();
+    for (let x = 0; x <= width; x += tileSize) {
+      const xCanvas = this.#transformTilesetPointToCanvasPoint({ x, y: 0 }).x;
+      context.moveTo(xCanvas, 0);
+      context.lineTo(xCanvas, this.#canvas.height);
+    }
+    for (let y = 0; y <= height; y += tileSize) {
+      const yCanvas = this.#transformTilesetPointToCanvasPoint({ x: 0, y }).y;
+      context.moveTo(0, yCanvas);
+      context.lineTo(this.#canvas.width, yCanvas);
+    }
+    context.stroke();
   }
 
   #handleResize = () => {
@@ -194,6 +221,12 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   #transformCanvasPointToTilesetPoint(point: PixelPoint): PixelPoint {
     const x = (point.x - this.#canvas.width / 2 + this.viewX) / this.viewZoom + this.tileset.width / 2;
     const y = (point.y - this.#canvas.height / 2 + this.viewY) / this.viewZoom + this.tileset.height / 2;
+    return { x, y };
+  }
+
+  #transformTilesetPointToCanvasPoint(point: PixelPoint): PixelPoint {
+    const x = (point.x - this.tileset.width / 2) * this.viewZoom + this.#canvas.width / 2 - this.viewX;
+    const y = (point.y - this.tileset.height / 2) * this.viewZoom + this.#canvas.height / 2 - this.viewY;
     return { x, y };
   }
 
