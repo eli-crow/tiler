@@ -4,8 +4,8 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: rgb(32, 32, 32);
+  color: var(--text);
+  background-color: var(--bg);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,10 +13,14 @@
   -moz-osx-font-smoothing: grayscale;
 
   --bg: hsl(210, 5%, 10%);
+  --bg-translucent: hsla(210, 5%, 10%, 0.5);
   --bg-surface: hsl(201, 5%, 14%);
   --bg-surface-active: hsl(201, 5%, 18%);
 
-  background: var(--bg);
+  --text: #bebec2;
+
+  --icon: #bebec2;
+  --icon-inactive: #5a5a63;
 }
 
 html {
@@ -36,4 +40,9 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1 0 0;
+}
+
+.surface-translucent {
+  background: var(--bg-translucent);
+  backdrop-filter: blur(12px);
 }

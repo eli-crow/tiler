@@ -1,6 +1,8 @@
 .root {
   min-width: 0;
   display: flex;
+  grid-row: 1 / -1;
+  grid-column: 1 / -1;
 }
 
 .container {

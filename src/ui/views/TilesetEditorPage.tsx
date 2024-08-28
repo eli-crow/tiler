@@ -9,7 +9,8 @@ import { PencilTool } from "../../editor/tools/PencilTool";
 import { TileEditorProvider } from "../providers/TilesetEditorProvider";
 import { TilesetProvider } from "../providers/TilesetProvider";
 import classes from "./TilesetEditorPage.module.css";
-import { TilesetEditorToolbar } from "./TilesetEditorTools";
+import { TilesetEditorToolbar } from "./TilesetEditorToolbar";
+import { TilesetEditorToolSettings } from "./TilesetEditorToolSettings";
 import { TilesetEditorView } from "./TilesetEditorView";
 
 const tileset4x4Plus = new Tileset4x4Plus();
@@ -48,6 +49,7 @@ export function TilesetEditorPage() {
       <TilesetProvider value={tileset}>
         <TileEditorProvider value={editor}>
           <TilesetEditorView />
+          <TilesetEditorToolSettings />
           <TilesetEditorToolbar />
         </TileEditorProvider>
       </TilesetProvider>

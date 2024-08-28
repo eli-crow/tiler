@@ -1,5 +1,5 @@
-import sampleImage from "../../assets/sample4x4Plus.png";
 import { BaseTileset } from "./BaseTileset";
+import sampleImage from "./examples/sample4x4Plus.png";
 
 const TILE_COLUMNS = 5;
 const TILE_ROWS = 4;
