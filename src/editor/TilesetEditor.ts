@@ -22,7 +22,9 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
 
   readonly #emitter = new EventEmitter<Events>();
   readonly on: EventEmitter<Events>["on"] = this.#emitter.on.bind(this.#emitter);
+  readonly once: EventEmitter<Events>["once"] = this.#emitter.once.bind(this.#emitter);
   readonly off: EventEmitter<Events>["off"] = this.#emitter.off.bind(this.#emitter);
+  protected readonly emit: EventEmitter<Events>["emit"] = this.#emitter.emit.bind(this.#emitter);
 
   #viewZoom = 5;
   #viewX = 0;
@@ -135,19 +137,25 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   }
 
   #draw() {
-    this.#context.globalCompositeOperation = "source-over";
     this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+    this.#drawArtboard();
     this.#drawTileset();
     this.#drawTileGuides();
   }
 
-  #drawTileset() {
-    this.#context.imageSmoothingEnabled = false;
+  #drawArtboard() {
     this.#context.resetTransform();
-    this.#context.translate(-this.viewX, -this.viewY);
-    this.#context.translate(this.#canvas.width / 2, this.#canvas.height / 2);
-    this.#context.scale(this.viewZoom, this.viewZoom);
-    this.#context.translate(this.tileset.width / -2, this.tileset.height / -2);
+    this.#context.globalCompositeOperation = "source-over";
+    this.#transformToCanvas();
+    this.#context.fillStyle = "rgba(83, 80, 92, 0.5)";
+    this.#context.fillRect(0, 0, this.tileset.width, this.tileset.height);
+  }
+
+  #drawTileset() {
+    this.#context.resetTransform();
+    this.#context.globalCompositeOperation = "source-over";
+    this.#context.imageSmoothingEnabled = false;
+    this.#transformToCanvas();
     this.#context.drawImage(this.tileset.imageSource, 0, 0);
   }
 
@@ -159,17 +167,28 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     context.globalCompositeOperation = "color-dodge";
     context.strokeStyle = "rgba(255, 0, 255, 0.5)";
     context.beginPath();
-    for (let x = 0; x <= width; x += tileSize) {
-      const xCanvas = this.#transformTilesetPointToCanvasPoint({ x, y: 0 }).x;
-      context.moveTo(xCanvas, 0);
-      context.lineTo(xCanvas, this.#canvas.height);
+
+    const { x: x0, y: y0 } = this.#tilesetToCanvasPoint({ x: 0, y: 0 });
+    const { x: x1, y: y1 } = this.#tilesetToCanvasPoint({ x: width, y: height });
+
+    for (let x = tileSize; x < width - 1; x += tileSize) {
+      const xCanvas = this.#tilesetToCanvasPoint({ x, y: 0 }).x;
+      context.moveTo(xCanvas, y0);
+      context.lineTo(xCanvas, y1);
     }
-    for (let y = 0; y <= height; y += tileSize) {
-      const yCanvas = this.#transformTilesetPointToCanvasPoint({ x: 0, y }).y;
-      context.moveTo(0, yCanvas);
-      context.lineTo(this.#canvas.width, yCanvas);
+    for (let y = tileSize; y < height; y += tileSize) {
+      const yCanvas = this.#tilesetToCanvasPoint({ x: 0, y }).y;
+      context.moveTo(x0, yCanvas);
+      context.lineTo(x1, yCanvas);
     }
     context.stroke();
+  }
+
+  #transformToCanvas() {
+    this.#context.translate(-this.viewX, -this.viewY);
+    this.#context.translate(this.#canvas.width / 2, this.#canvas.height / 2);
+    this.#context.scale(this.viewZoom, this.viewZoom);
+    this.#context.translate(this.tileset.width / -2, this.tileset.height / -2);
   }
 
   #handleResize = () => {
@@ -224,7 +243,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     return { x, y };
   }
 
-  #transformTilesetPointToCanvasPoint(point: PixelPoint): PixelPoint {
+  #tilesetToCanvasPoint(point: PixelPoint): PixelPoint {
     const x = (point.x - this.tileset.width / 2) * this.viewZoom + this.#canvas.width / 2 - this.viewX;
     const y = (point.y - this.tileset.height / 2) * this.viewZoom + this.#canvas.height / 2 - this.viewY;
     return { x, y };

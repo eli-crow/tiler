@@ -12,9 +12,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --bg: hsl(220, 10%, 18%);
-  --bg-surface: hsl(220, 8%, 26%);
-  --bg-surface-active: hsl(220, 8%, 30%);
+  --bg: hsl(210, 5%, 10%);
+  --bg-surface: hsl(201, 5%, 14%);
+  --bg-surface-active: hsl(201, 5%, 18%);
 
   background: var(--bg);
 }

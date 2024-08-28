@@ -5,8 +5,6 @@ const TRANSPARENT: RGBA = [0, 0, 0, 0];
 
 export type SupportsPencilTool = {
   setPixel(x: number, y: number, color: RGBA): void;
-  get tool(): Tool;
-  set tool(tool: PencilTool);
 };
 
 type ToolState =

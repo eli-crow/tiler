@@ -1,38 +1,39 @@
-import { createTile, RGBA, Tile, TileGrid, TileInnerCorner, TilePosition, tilesMatch } from "../model";
+import type { JigsawTile, JigsawTileGrid, RGBA, TileInnerCorner } from "../model";
+import { tilesMatch } from "../model";
+import { SupportsJigsawTileTool } from "../tools/JigsawTileTool";
+import { SupportsPencilTool } from "../tools/PencilTool";
 import { BaseTileset } from "./BaseTileset";
-import { Tileset4x4Plus } from "./Tileset4x4Plus";
+import type { Tileset4x4Plus } from "./Tileset4x4Plus";
 
-export class Tileset4x4PlusToGodot extends BaseTileset {
-  #tiles: TileGrid;
-  #tileset: Tileset4x4Plus;
+export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawTileTool, SupportsPencilTool {
+  readonly tiles: JigsawTileGrid;
+  readonly tileset: Tileset4x4Plus;
 
-  constructor(tileset: Tileset4x4Plus) {
-    const tiles = GODOT_TILES;
-
+  constructor(tileset: Tileset4x4Plus, tiles: JigsawTileGrid) {
     super(tileset.tileSize, tiles[0].length, tiles.length);
 
-    this.#tiles = tiles;
-    this.#tileset = tileset;
-    tileset.on("dataChanged", this.#handleTilesetDataChanged);
+    this.tiles = tiles;
+    this.tileset = tileset;
+    this.tileset.on("dataChanged", this.#handleTilesetDataChanged);
   }
 
   invalidate() {
-    this.#tileset.invalidate();
+    this.tileset.invalidate();
     this.emit("dataChanged");
   }
 
-  getTileImageData(tile: Tile): ImageData {
-    const data = this.#tileset.getTileImageData(tile);
+  getTileImageData(tile: JigsawTile): ImageData {
+    const data = this.tileset.getTileImageData(tile);
     tile.corners.forEach((corner) => this.#applyInnerCorner(data, corner));
     return data;
   }
 
-  getTileAtPoint(x: number, y: number): Tile | null {
+  getTileAtPoint(x: number, y: number): JigsawTile | null {
     const position = this.getTilePositionAtPixel(x, y);
     if (!position) {
       return null;
     }
-    const tile = this.#tiles[position.y][position.x];
+    const tile = this.tiles[position.y][position.x];
     return tile;
   }
 
@@ -46,7 +47,7 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
     this.setTilePixel(tile, offsetX, offsetY, color);
   }
 
-  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
+  setTilePixel(tile: JigsawTile, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
 
     let isInnerTR = false;
@@ -80,25 +81,25 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
       const size = this.tileSize;
       const x = tile.x * size + offsetX;
       const y = tile.y * size + offsetY;
-      this.#tileset.setPixel(x, y, color);
+      this.tileset.setPixel(x, y, color);
     }
   }
 
-  getTile(position: TilePosition): Tile | null {
-    return this.#tiles[position.y]?.[position.x] ?? null;
+  getTile(x: number, y: number): JigsawTile | null {
+    return this.tiles[y]?.[x] ?? null;
   }
 
-  setTile(position: TilePosition, tile: Tile) {
-    const existingTile = this.getTile(position);
+  setTile(x: number, y: number, tile: JigsawTile) {
+    const existingTile = this.getTile(x, y);
     if (existingTile && tilesMatch(existingTile, tile)) {
       return;
     }
-    this.#tiles[position.y][position.x] = tile;
+    this.tiles[y][x] = tile;
   }
 
   #draw() {
     this.context.clearRect(0, 0, this.width, this.height);
-    this.#tiles.forEach((row, y) => {
+    this.tiles.forEach((row, y) => {
       row.forEach((tile, x) => {
         const imageData = this.getTileImageData(tile);
         const targetX = x * this.tileSize;
@@ -110,12 +111,13 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
 
   #handleTilesetDataChanged = () => {
     this.#draw();
+    this.emit("dataChanged");
   };
 
   #setInnerCornerTilePixel(offsetX: number, offsetY: number, color: RGBA) {
     const x = 4 * this.tileSize + offsetX;
     const y = 0 * this.tileSize + offsetY;
-    this.#tileset.setPixel(x, y, color);
+    this.tileset.setPixel(x, y, color);
   }
 
   #getInnerCornerImageData(corner: TileInnerCorner) {
@@ -143,7 +145,7 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
     const cornerTileStartX = 4 * size;
     const cornerTileStartY = 0;
 
-    const imageData = this.#tileset.getImageData(
+    const imageData = this.tileset.getImageData(
       cornerTileStartX + offsetX,
       cornerTileStartY + offsetY,
       size / 2,
@@ -180,74 +182,3 @@ export class Tileset4x4PlusToGodot extends BaseTileset {
     }
   }
 }
-
-const GODOT_TILES: TileGrid = [
-  [
-    createTile(0, 0),
-
-    createTile(1, 0, ["br"]),
-    createTile(2, 0, ["bl", "br"]),
-    createTile(3, 0, ["bl"]),
-
-    createTile(2, 1, ["bl", "tr", "br"]),
-    createTile(2, 0, ["bl"]),
-    createTile(2, 0, ["br"]),
-    createTile(2, 1, ["bl", "tl", "br"]),
-
-    createTile(1, 0),
-    createTile(2, 1, ["tl", "bl"]),
-    createTile(2, 0),
-    createTile(3, 0),
-  ],
-  [
-    createTile(0, 1),
-
-    createTile(1, 1, ["br", "tr"]),
-    createTile(2, 1, ["bl", "br", "tr", "tl"]),
-    createTile(3, 1, ["tl", "bl"]),
-
-    createTile(1, 1, ["tr"]),
-    createTile(2, 1, ["tl"]),
-    createTile(2, 1, ["tr"]),
-    createTile(3, 1, ["tl"]),
-
-    createTile(1, 1),
-    createTile(2, 1, ["tl", "br"]),
-    createTile(4, 1),
-    createTile(2, 1, ["tr", "br"]),
-  ],
-  [
-    createTile(0, 2),
-
-    createTile(1, 2, ["tr"]),
-    createTile(2, 2, ["tr", "br"]),
-    createTile(3, 2, ["tl"]),
-
-    createTile(1, 1, ["br"]),
-    createTile(2, 1, ["bl"]),
-    createTile(2, 1, ["br"]),
-    createTile(3, 1, ["bl"]),
-
-    createTile(2, 1, ["tl", "bl"]),
-    createTile(2, 1),
-    createTile(2, 1, ["tr", "bl"]),
-    createTile(3, 1),
-  ],
-  [
-    createTile(0, 3),
-
-    createTile(1, 3),
-    createTile(2, 3),
-    createTile(3, 3),
-
-    createTile(2, 1, ["bl", "tr", "br"]),
-    createTile(2, 2, ["tl"]),
-    createTile(2, 2, ["tr"]),
-    createTile(2, 1, ["tl", "tr", "bl"]),
-
-    createTile(1, 2),
-    createTile(2, 2),
-    createTile(2, 1, ["bl", "br"]),
-    createTile(3, 2),
-  ],
-];

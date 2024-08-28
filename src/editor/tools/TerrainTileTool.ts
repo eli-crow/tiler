@@ -1,24 +1,21 @@
-import { Tile } from "../model";
 import { Tool } from "./Tool";
 
-export type SupportsTileTool = {
-  setTile(x: number, y: number, tile: Tile): void;
-  get tool(): Tool;
-  set tool(tool: TileTool);
+export type SupportsTerrainTileTool = {
+  setTile(x: number, y: number, tile: boolean): void;
 };
 
 type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
-export class TileTool extends Tool<SupportsTileTool> {
+export class TerrainTileTool extends Tool<SupportsTerrainTileTool> {
   #state: ToolState = { type: "idle" };
-  #tile: Tile = { x: 0, y: 0, corners: [] };
+  #erase: boolean = false;
 
-  get tile() {
-    return this.#tile;
+  get erase() {
+    return this.#erase;
   }
 
-  set tile(tile: Tile) {
-    this.#tile = tile;
+  set erase(value: boolean) {
+    this.#erase = value;
     this.notifyChanged();
   }
 
@@ -32,7 +29,7 @@ export class TileTool extends Tool<SupportsTileTool> {
       if (!position) {
         return;
       }
-      this.tileset.setTile(position.x, position.x, this.tile);
+      this.tileset.setTile(position.x, position.y, !this.erase);
       this.tileset.invalidate();
       this.#state = { type: "down" };
     }
@@ -52,7 +49,7 @@ export class TileTool extends Tool<SupportsTileTool> {
       if (!position) {
         return;
       }
-      this.tileset.setTile(position.x, position.y, this.tile);
+      this.tileset.setTile(position.x, position.y, !this.erase);
       this.tileset.invalidate();
     }
   }

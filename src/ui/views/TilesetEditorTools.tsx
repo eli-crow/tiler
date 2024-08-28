@@ -1,5 +1,6 @@
+import { JigsawTileTool } from "../../editor/tools/JigsawTileTool";
 import { PencilTool } from "../../editor/tools/PencilTool";
-import { TileTool } from "../../editor/tools/TileTool";
+import { TerrainTileTool } from "../../editor/tools/TerrainTileTool";
 import { useTilesetEditor } from "../providers/TilesetEditorProvider";
 import { PencilToolEditor } from "./PencilToolEditor";
 import classes from "./TilesetEditorTools.module.css";
@@ -26,10 +27,17 @@ export function TilesetEditorToolbar() {
         </button>
         <button
           className={classes.tool}
-          data-active={editor.tool instanceof TileTool}
-          onClick={() => (editor.tool = new TileTool())}
+          data-active={editor.tool instanceof JigsawTileTool}
+          onClick={() => (editor.tool = new JigsawTileTool())}
         >
           🀄
+        </button>
+        <button
+          className={classes.tool}
+          data-active={editor.tool instanceof TerrainTileTool}
+          onClick={() => (editor.tool = new TerrainTileTool())}
+        >
+          ⛰️
         </button>
       </div>
 

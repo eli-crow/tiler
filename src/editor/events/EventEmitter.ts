@@ -10,6 +10,14 @@ export class EventEmitter<TEvents extends { [Key in keyof TEvents]: (...args: an
     listeners.add(listener);
   }
 
+  once<T extends keyof TEvents>(event: T, listener: TEvents[T]) {
+    const onceListener = (...args: Parameters<TEvents[T]>) => {
+      this.off(event, onceListener as TEvents[T]);
+      listener(...args);
+    };
+    this.on(event, onceListener as TEvents[T]);
+  }
+
   off<T extends keyof TEvents>(event: T, listener: TEvents[T]) {
     const listeners = this.#listeners[event];
     if (listeners) {

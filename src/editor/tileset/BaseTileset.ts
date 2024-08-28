@@ -1,11 +1,12 @@
 import { EventEmitter } from "../events/EventEmitter";
-import { RGBA, Tile, TilePosition } from "../model";
+import type { JigsawTile, RGBA, TilePosition } from "../model";
+import { SupportsPencilTool } from "../tools/PencilTool";
 
 interface Events {
   dataChanged(): void;
 }
 
-export abstract class BaseTileset {
+export abstract class BaseTileset implements SupportsPencilTool {
   readonly #canvas: OffscreenCanvas;
   protected readonly context: OffscreenCanvasRenderingContext2D;
   readonly tileSize: number;
@@ -13,6 +14,7 @@ export abstract class BaseTileset {
   readonly tileRows: number;
   readonly #emitter = new EventEmitter<Events>();
   readonly on: EventEmitter<Events>["on"] = this.#emitter.on.bind(this.#emitter);
+  readonly once: EventEmitter<Events>["once"] = this.#emitter.once.bind(this.#emitter);
   readonly off: EventEmitter<Events>["off"] = this.#emitter.off.bind(this.#emitter);
   protected readonly emit: EventEmitter<Events>["emit"] = this.#emitter.emit.bind(this.#emitter);
 
@@ -39,6 +41,10 @@ export abstract class BaseTileset {
     this.context.imageSmoothingEnabled = false;
   }
 
+  tilePositionInRange(x: number, y: number): boolean {
+    return x >= 0 && x < this.tileColumns && y >= 0 && y < this.tileRows;
+  }
+
   getTilePositionAtPixel(x: number, y: number): TilePosition | null {
     const tileX = Math.floor(x / this.tileSize);
     const tileY = Math.floor(y / this.tileSize);
@@ -48,7 +54,7 @@ export abstract class BaseTileset {
     return { x: tileX, y: tileY };
   }
 
-  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
+  setTilePixel(tile: JigsawTile, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
     const x = tile.x * size + offsetX;
     const y = tile.y * size + offsetY;
@@ -71,7 +77,7 @@ export abstract class BaseTileset {
     this.context.drawImage(image, 0, 0);
   }
 
-  getTileImageData(tile: Tile): ImageData {
+  getTileImageData(tile: JigsawTile): ImageData {
     const size = this.tileSize;
     const x = tile.x * size;
     const y = tile.y * size;
@@ -91,5 +97,20 @@ export abstract class BaseTileset {
 
   getImageData(x: number, y: number, width: number, height: number): ImageData {
     return this.context.getImageData(x, y, width, height);
+  }
+
+  getUniqueColors(): RGBA[] {
+    const uniqueColors: RGBA[] = [];
+    const colorHashes = new Set<string>();
+    const data = this.context.getImageData(0, 0, this.#canvas.width, this.#canvas.height).data;
+    for (let i = 0; i < data.length; i += 4) {
+      const color: RGBA = [data[i], data[i + 1], data[i + 2], data[i + 3]];
+      const hash = color.join(",");
+      if (!colorHashes.has(hash)) {
+        uniqueColors.push(color);
+        colorHashes.add(hash);
+      }
+    }
+    return uniqueColors;
   }
 }
