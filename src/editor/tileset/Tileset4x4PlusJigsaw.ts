@@ -22,6 +22,10 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
     this.emit("dataChanged");
   }
 
+  getUniqueColors(): RGBA[] {
+    return this.tileset.getUniqueColors();
+  }
+
   getTileImageData(tile: Tile): ImageData {
     const data = this.tileset.getTileImageData(tile);
     tile.corners.forEach((corner) => this.#applyInnerCorner(data, corner));

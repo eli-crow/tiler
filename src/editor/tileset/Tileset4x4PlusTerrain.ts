@@ -44,6 +44,10 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     this.emit("dataChanged");
   }
 
+  getUniqueColors(): RGBA[] {
+    return this.#jigsaw.getUniqueColors();
+  }
+
   getTile(x: number, y: number): boolean | null {
     return this.#tiles[y]?.[x] ?? null;
   }
