@@ -22,5 +22,25 @@ export function TilesetEditorView() {
     }
   }, [containerEl, editor]);
 
-  return <div ref={setContainerEl} className={classes.root} />;
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      console.log(e.metaKey, e.ctrlKey, e.key);
+      if ((e.metaKey || e.ctrlKey) && e.key === "c") {
+        e.preventDefault();
+        e.stopPropagation();
+        editor.copyToClipboard();
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+    };
+  }, []);
+
+  return (
+    <div className={classes.root}>
+      <div ref={setContainerEl} className={classes.container}></div>
+    </div>
+  );
 }

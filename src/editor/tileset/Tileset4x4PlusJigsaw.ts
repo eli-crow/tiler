@@ -22,7 +22,7 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
     this.emit("dataChanged");
   }
 
-  getUniqueColors(): RGBA[] {
+  getUniqueColors() {
     return this.tileset.getUniqueColors();
   }
 

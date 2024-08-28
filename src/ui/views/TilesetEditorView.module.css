@@ -1,5 +1,12 @@
 .root {
   min-width: 0;
   display: flex;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
   position: relative;
 }

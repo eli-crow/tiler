@@ -1,4 +1,5 @@
 import { CSSProperties } from "react";
+import { ClipboardService } from "../ui/services/clipboardService";
 import { EventEmitter } from "./events/EventEmitter";
 import { PixelPoint } from "./model";
 import { BaseTileset } from "./tileset/BaseTileset";
@@ -134,6 +135,10 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
 
   unmount() {
     this.#canvas.remove();
+  }
+
+  copyToClipboard() {
+    ClipboardService.default.copyImageSource(this.tileset.imageSource);
   }
 
   #draw() {

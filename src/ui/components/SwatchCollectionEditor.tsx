@@ -14,7 +14,7 @@ interface SwatchCollectionEditorProps {
 export function SwatchCollectionEditor({ onSelect }: SwatchCollectionEditorProps) {
   const tileset = useTileset();
 
-  const [uniqueColors, setUniqueColors] = useState<RGBA[]>(tileset.getUniqueColors());
+  const [uniqueColors, setUniqueColors] = useState(tileset.getUniqueColors());
 
   useEffect(() => {
     const handleDataChanged = debounce(() => {
@@ -29,7 +29,7 @@ export function SwatchCollectionEditor({ onSelect }: SwatchCollectionEditorProps
   return (
     <div className={classes.root}>
       <div className={classes.swatchGroup}>
-        {uniqueColors.map((color, index) => (
+        {uniqueColors.map(([color], index) => (
           <Swatch key={index} color={color} onSelect={() => onSelect(color)} />
         ))}
       </div>

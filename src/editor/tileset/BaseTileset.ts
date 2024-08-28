@@ -1,3 +1,4 @@
+import { SizedImageSource } from "../../ui/services/clipboardService";
 import { EventEmitter } from "../events/EventEmitter";
 import type { RGBA, Tile, TilePosition } from "../model";
 import { SupportsPencilTool } from "../tools/PencilTool";
@@ -26,7 +27,7 @@ export abstract class BaseTileset implements SupportsPencilTool {
     return this.#canvas.height;
   }
 
-  get imageSource(): CanvasImageSource {
+  get imageSource(): SizedImageSource {
     return this.#canvas;
   }
 
@@ -99,18 +100,24 @@ export abstract class BaseTileset implements SupportsPencilTool {
     return this.context.getImageData(x, y, width, height);
   }
 
-  getUniqueColors(): RGBA[] {
-    const uniqueColors: RGBA[] = [];
-    const colorHashes = new Set<string>();
+  getUniqueColors(): [RGBA, number][] {
+    const colorCounts: Map<string, number> = new Map();
     const data = this.context.getImageData(0, 0, this.#canvas.width, this.#canvas.height).data;
     for (let i = 0; i < data.length; i += 4) {
       const color: RGBA = [data[i], data[i + 1], data[i + 2], data[i + 3]];
       const hash = color.join(",");
-      if (!colorHashes.has(hash)) {
-        uniqueColors.push(color);
-        colorHashes.add(hash);
+      if (colorCounts.has(hash)) {
+        colorCounts.set(hash, colorCounts.get(hash)! + 1);
+      } else {
+        colorCounts.set(hash, 1);
       }
     }
-    return uniqueColors;
+    const rankedColors: [RGBA, number][] = Array.from(colorCounts.entries())
+      .map(([hash, count]) => {
+        const color: RGBA = hash.split(",").map(Number) as RGBA;
+        return [color, count] as [RGBA, number];
+      })
+      .sort((a, b) => b[1] - a[1]);
+    return rankedColors;
   }
 }
