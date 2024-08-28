@@ -1,5 +1,8 @@
 import {
   flattenTileNeighborGrid,
+  RGBA,
+  TerrainTile,
+  Tile,
   type FlattenedTileNeighborGrid,
   type TerrainTileGrid,
   type TileNeighborGrid,
@@ -52,7 +55,32 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     this.#tiles[y][x] = tile;
   }
 
-  getJigsawTilePosition(terrainX: number, terrainY: number): TilePosition | null {
+  setPixel(x: number, y: number, color: RGBA): void {
+    const position = this.getTilePositionAtPixel(x, y);
+    if (!position) {
+      return;
+    }
+
+    const tile = this.getJigsawTile(position.x, position.y);
+    if (!tile) {
+      return;
+    }
+
+    const offsetX = x % this.tileSize;
+    const offsetY = y % this.tileSize;
+    this.#jigsaw.setTilePixel(tile, offsetX, offsetY, color);
+  }
+
+  getTileAtPoint(x: number, y: number): TerrainTile | null {
+    const position = this.getTilePositionAtPixel(x, y);
+    if (!position) {
+      return null;
+    }
+    const tile = this.#tiles[position.y][position.x];
+    return tile;
+  }
+
+  getJigsawTile(terrainX: number, terrainY: number): Tile | null {
     if (!this.tilePositionInRange(terrainX, terrainY)) {
       return null;
     }
@@ -63,8 +91,10 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     const h_b = (neighbors & BIT_B) === BIT_B;
     const h_l = (neighbors & BIT_L) === BIT_L;
 
-    // h_ means selected tile "has" that neighbor
-    // m_ means selected tile "matches" the other tile's neighbor
+    // h_ = selected tile "has" that neighbor
+    // m_ = selected tile "matches" the other tile's neighbor
+
+    let position: TilePosition | null = null;
 
     for (const { x, y, neighbors: other } of this.#tileNeighbors) {
       const m_s = (neighbors & BIT_S) === (other & BIT_S);
@@ -78,18 +108,21 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
       const m_br = (neighbors & BIT_BR) === (other & BIT_BR);
       const m_bl = (neighbors & BIT_BL) === (other & BIT_BL);
       const m_tl = (neighbors & BIT_TL) === (other & BIT_TL);
-
       if (h_t && h_r && !m_tr) continue;
       if (h_r && h_b && !m_br) continue;
       if (h_b && h_l && !m_bl) continue;
       if (h_l && h_t && !m_tl) continue;
 
-      return { x, y };
+      position = { x, y };
+      break;
     }
 
-    // const match = sidesCandidates.find((candidate) => this.hasMatchingCorners(neighbors, candidate.neighbors));
+    if (!position) {
+      return null;
+    }
 
-    return null;
+    const jigsawTile = this.#jigsaw.getTile(position.x, position.y);
+    return jigsawTile;
   }
 
   getTileNeighbors(x: number, y: number): number {
@@ -130,11 +163,7 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     this.context.clearRect(0, 0, this.width, this.height);
     this.#tiles.forEach((row, y) => {
       row.forEach((_, x) => {
-        const jigsawPosition = this.getJigsawTilePosition(x, y);
-        if (!jigsawPosition) {
-          return;
-        }
-        const jigsawTile = this.#jigsaw.getTile(jigsawPosition.x, jigsawPosition.y);
+        const jigsawTile = this.getJigsawTile(x, y);
         if (!jigsawTile) {
           return;
         }

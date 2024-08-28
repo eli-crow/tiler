@@ -1,4 +1,4 @@
-import type { JigsawTile, JigsawTileGrid, RGBA, TileInnerCorner } from "../model";
+import type { JigsawTileGrid, RGBA, Tile, TileInnerCorner } from "../model";
 import { tilesMatch } from "../model";
 import { SupportsJigsawTileTool } from "../tools/JigsawTileTool";
 import { SupportsPencilTool } from "../tools/PencilTool";
@@ -22,13 +22,13 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
     this.emit("dataChanged");
   }
 
-  getTileImageData(tile: JigsawTile): ImageData {
+  getTileImageData(tile: Tile): ImageData {
     const data = this.tileset.getTileImageData(tile);
     tile.corners.forEach((corner) => this.#applyInnerCorner(data, corner));
     return data;
   }
 
-  getTileAtPoint(x: number, y: number): JigsawTile | null {
+  getTileAtPoint(x: number, y: number): Tile | null {
     const position = this.getTilePositionAtPixel(x, y);
     if (!position) {
       return null;
@@ -47,7 +47,7 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
     this.setTilePixel(tile, offsetX, offsetY, color);
   }
 
-  setTilePixel(tile: JigsawTile, offsetX: number, offsetY: number, color: RGBA) {
+  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
 
     let isInnerTR = false;
@@ -85,11 +85,11 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
     }
   }
 
-  getTile(x: number, y: number): JigsawTile | null {
+  getTile(x: number, y: number): Tile | null {
     return this.tiles[y]?.[x] ?? null;
   }
 
-  setTile(x: number, y: number, tile: JigsawTile) {
+  setTile(x: number, y: number, tile: Tile) {
     const existingTile = this.getTile(x, y);
     if (existingTile && tilesMatch(existingTile, tile)) {
       return;

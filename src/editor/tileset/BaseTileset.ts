@@ -1,5 +1,5 @@
 import { EventEmitter } from "../events/EventEmitter";
-import type { JigsawTile, RGBA, TilePosition } from "../model";
+import type { RGBA, Tile, TilePosition } from "../model";
 import { SupportsPencilTool } from "../tools/PencilTool";
 
 interface Events {
@@ -54,7 +54,7 @@ export abstract class BaseTileset implements SupportsPencilTool {
     return { x: tileX, y: tileY };
   }
 
-  setTilePixel(tile: JigsawTile, offsetX: number, offsetY: number, color: RGBA) {
+  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
     const x = tile.x * size + offsetX;
     const y = tile.y * size + offsetY;
@@ -77,7 +77,7 @@ export abstract class BaseTileset implements SupportsPencilTool {
     this.context.drawImage(image, 0, 0);
   }
 
-  getTileImageData(tile: JigsawTile): ImageData {
+  getTileImageData(tile: Tile): ImageData {
     const size = this.tileSize;
     const x = tile.x * size;
     const y = tile.y * size;

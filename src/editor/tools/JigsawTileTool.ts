@@ -1,21 +1,21 @@
-import { JigsawTile } from "../model";
+import { Tile } from "../model";
 import { Tool } from "./Tool";
 
 export type SupportsJigsawTileTool = {
-  setTile(x: number, y: number, tile: JigsawTile): void;
+  setTile(x: number, y: number, tile: Tile): void;
 };
 
 type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
 export class JigsawTileTool extends Tool<SupportsJigsawTileTool> {
   #state: ToolState = { type: "idle" };
-  #tile: JigsawTile = { x: 0, y: 0, corners: [] };
+  #tile: Tile = { x: 0, y: 0, corners: [] };
 
   get tile() {
     return this.#tile;
   }
 
-  set tile(tile: JigsawTile) {
+  set tile(tile: Tile) {
     this.#tile = tile;
     this.notifyChanged();
   }

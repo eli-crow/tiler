@@ -6,7 +6,7 @@ export type PixelPoint = {
   y: number;
 };
 
-export type JigsawTile = {
+export type Tile = {
   x: number;
   y: number;
   corners: readonly TileInnerCorner[];
@@ -17,7 +17,7 @@ export type TilePosition = {
   y: number;
 };
 
-export function tilesMatch(a: JigsawTile, b: JigsawTile): boolean {
+export function tilesMatch(a: Tile, b: Tile): boolean {
   return (
     a.x === b.x &&
     a.y === b.y &&
@@ -29,7 +29,7 @@ export function tilesMatch(a: JigsawTile, b: JigsawTile): boolean {
 export type TileInnerCorner = "tl" | "tr" | "bl" | "br";
 export type TileNeighbor = "tl" | "tr" | "bl" | "br" | "t" | "r" | "b" | "l";
 
-export function createJigsawTile(x: number, y: number, corners: readonly TileInnerCorner[] = []): JigsawTile {
+export function createJigsawTile(x: number, y: number, corners: readonly TileInnerCorner[] = []): Tile {
   return {
     x,
     y,
@@ -37,7 +37,7 @@ export function createJigsawTile(x: number, y: number, corners: readonly TileInn
   };
 }
 
-export type JigsawTileGrid = JigsawTile[][];
+export type JigsawTileGrid = Tile[][];
 
 export type TilesetChangedCallback = () => void;
 
