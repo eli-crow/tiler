@@ -66,10 +66,11 @@ export class PencilTool extends Tool<SupportsPencilTool> {
 
     if (this.#state.type === "dragging") {
       const { lastMoveX, lastMoveY } = this.#state;
+
+      this.tileset.setPixel(x, y, this.resolvedColor);
+
       let currentX = lastMoveX;
       let currentY = lastMoveY;
-
-      this.tileset.setPixel(currentX, currentY, this.resolvedColor);
 
       while (true) {
         const deltaX = x - currentX;
