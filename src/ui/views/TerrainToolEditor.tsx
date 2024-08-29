@@ -8,7 +8,7 @@ interface TerrainToolEditor {
   tool: TerrainTileTool;
 }
 
-export function TerrainToolEditor({ tool }: TerrainToolEditor) {
+export function TerrainToolEditor({}: TerrainToolEditor) {
   const editor = useTilesetEditor();
 
   function randomize(): void {

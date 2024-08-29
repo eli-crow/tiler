@@ -1,4 +1,4 @@
-import { SizedImageSource } from "../../ui/services/clipboardService";
+import { SizedImageSource } from "../../ui/services/ClipboardService";
 import { EventEmitter } from "../events/EventEmitter";
 import type { RGBA, Tile, TilePosition } from "../model";
 import { SupportsPencilTool } from "../tools/PencilTool";

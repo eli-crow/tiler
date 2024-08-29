@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { ClipboardService } from "../ui/services/clipboardService";
+import { ClipboardService } from "../ui/services/ClipboardService";
 import { EventEmitter } from "./events/EventEmitter";
 import { PixelPoint } from "./model";
 import { BaseTileset } from "./tileset/BaseTileset";
