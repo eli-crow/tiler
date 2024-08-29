@@ -207,8 +207,8 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     );
     this.#cachedPageRect = pageRect;
 
-    this.#canvas.width = pageRect.width * window.devicePixelRatio;
-    this.#canvas.height = pageRect.height * window.devicePixelRatio;
+    this.#canvas.width = pageRect.width;
+    this.#canvas.height = pageRect.height;
 
     this.#draw();
   };

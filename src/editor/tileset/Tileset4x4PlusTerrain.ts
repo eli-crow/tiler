@@ -59,6 +59,14 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     this.#tiles[y][x] = tile;
   }
 
+  randomize() {
+    this.#tiles.forEach((row) => {
+      row.forEach((_, x) => {
+        row[x] = Math.random() < 0.75;
+      });
+    });
+  }
+
   setPixel(x: number, y: number, color: RGBA): void {
     const position = this.getTilePositionAtPixel(x, y);
     if (!position) {
