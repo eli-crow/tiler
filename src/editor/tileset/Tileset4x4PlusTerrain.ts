@@ -37,6 +37,9 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     this.#jigsaw.on("dataChanged", this.#handleJigsawDataChanged);
 
     this.#tileNeighbors = flattenTileNeighborGrid(neighborGrid);
+
+    this.randomize();
+    this.invalidate();
   }
 
   invalidate() {
