@@ -20,6 +20,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   #container: HTMLElement = null!;
   #cachedPageRect: DOMRect | null = null;
   #tool: SupportedTool = null!;
+  #checkerPattern: CanvasPattern = null!;
 
   readonly #emitter = new EventEmitter<Events>();
   readonly on: EventEmitter<Events>["on"] = this.#emitter.on.bind(this.#emitter);
@@ -124,6 +125,20 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
 
     this.#context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true })!;
     this.#context.imageSmoothingEnabled = false;
+
+    const checkerCanvas = document.createElement("canvas");
+    const checkerContext = checkerCanvas.getContext("2d")!;
+    const patternSize = 2;
+    checkerCanvas.width = patternSize;
+    checkerCanvas.height = patternSize;
+    checkerContext.fillStyle = "rgba(100, 100, 100, 1)";
+    checkerContext.fillRect(0, 0, 1, 1);
+    checkerContext.fillRect(1, 1, 1, 1);
+    checkerContext.fillStyle = "rgba(160, 160, 160, 1)";
+    checkerContext.fillRect(1, 0, 1, 1);
+    checkerContext.fillRect(0, 1, 1, 1);
+
+    this.#checkerPattern = this.#context.createPattern(checkerCanvas, "repeat")!;
   }
 
   mount(container: HTMLElement) {
@@ -152,7 +167,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#context.resetTransform();
     this.#context.globalCompositeOperation = "source-over";
     this.#transformToCanvas();
-    this.#context.fillStyle = "rgba(83, 80, 92, 0.5)";
+    this.#context.fillStyle = this.#checkerPattern;
     this.#context.fillRect(0, 0, this.tileset.width, this.tileset.height);
   }
 
