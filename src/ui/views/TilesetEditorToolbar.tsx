@@ -6,7 +6,7 @@ import ToolIconEraser from "../icons/tool-eraser.svg?react";
 import ToolIconJigsaw from "../icons/tool-jigsaw-tile.svg?react";
 import ToolIconPencil from "../icons/tool-pencil.svg?react";
 import ToolIconTerrain from "../icons/tool-terrain-tile.svg?react";
-import { useTilesetEditor } from "../providers/TilesetEditorProvider";
+import { useTilesetEditor } from "../providers/TilesetEditorPageProvider";
 import classes from "./TilesetEditorToolbar.module.css";
 
 export function TilesetEditorToolbar() {

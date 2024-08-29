@@ -1,7 +1,7 @@
 import { Tileset4x4PlusTerrain } from "../../editor/tileset/Tileset4x4PlusTerrain";
 import { TerrainTileTool } from "../../editor/tools/TerrainTileTool";
 import RandomizeIcon from "../icons/randomize.svg?react";
-import { useTilesetEditor } from "../providers/TilesetEditorProvider";
+import { useTilesetEditor } from "../providers/TilesetEditorPageProvider";
 import classes from "./TerrainToolEditor.module.css";
 
 interface TerrainToolEditor {

@@ -1,7 +1,7 @@
 import { PencilTool } from "../../editor/tools/PencilTool";
 import { TerrainTileTool } from "../../editor/tools/TerrainTileTool";
 import { mergeClasses } from "../../utilities";
-import { useTilesetEditor } from "../providers/TilesetEditorProvider";
+import { useTilesetEditor } from "../providers/TilesetEditorPageProvider";
 import { PencilToolEditor } from "./PencilToolEditor";
 import { TerrainToolEditor } from "./TerrainToolEditor";
 import classes from "./TilesetEditorToolSettings.module.css";

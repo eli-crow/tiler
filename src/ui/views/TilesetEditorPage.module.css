@@ -10,14 +10,3 @@
     ". . . . ." var(--margin)
     / var(--margin) auto 1fr auto var(--margin);
 }
-
-.topbar {
-  grid-area: topbar;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
-  padding: 0 16px;
-  position: relative;
-  z-index: 1;
-}
