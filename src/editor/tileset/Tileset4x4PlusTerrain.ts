@@ -78,6 +78,12 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
       return;
     }
 
+    const neighbors = this.getTileNeighbors(position.x, position.y);
+
+    if ((neighbors & BIT_S) !== BIT_S) {
+      return;
+    }
+
     const offsetX = x % this.tileSize;
     const offsetY = y % this.tileSize;
     this.#jigsaw.setTilePixel(tile, offsetX, offsetY, color);
