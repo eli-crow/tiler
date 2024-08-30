@@ -1,18 +1,16 @@
-import { PencilTool } from "../../editor/tools/PencilTool";
-import { TerrainTileTool } from "../../editor/tools/TerrainTileTool";
 import { mergeClasses } from "../../utilities";
-import { useTilesetEditor } from "../providers/TilesetEditorPageProvider";
-import { PencilToolEditor } from "./PencilToolEditor";
-import { TerrainToolEditor } from "./TerrainToolEditor";
+import { ColorPicker } from "../components/ColorPicker";
+import { SwatchCollectionEditor } from "../components/SwatchCollectionEditor";
+import { useTilesetEditorPageContext } from "../providers/TilesetEditorPageProvider";
 import classes from "./TilesetEditorToolSettings.module.css";
 
 export function TilesetEditorToolSettings() {
-  const editor = useTilesetEditor();
+  const page = useTilesetEditorPageContext();
 
   return (
     <div className={mergeClasses(classes.root, "surface-translucent")}>
-      {editor.tool instanceof PencilTool && !editor.tool.erase && <PencilToolEditor tool={editor.tool} />}
-      {editor.tool instanceof TerrainTileTool && <TerrainToolEditor tool={editor.tool} />}
+      <ColorPicker color={page.color} onChange={page.setColor} />
+      <SwatchCollectionEditor onSelect={page.setColor} />
     </div>
   );
 }

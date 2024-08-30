@@ -1,7 +1,7 @@
 import { CSSProperties } from "react";
 import { ClipboardService } from "../ui/services/ClipboardService";
 import { EventEmitter } from "./events/EventEmitter";
-import { PixelPoint } from "./model";
+import { PixelPoint, RGBA } from "./model";
 import { BaseTileset } from "./tileset/BaseTileset";
 import { Tool } from "./tools/Tool";
 
@@ -10,7 +10,7 @@ const ZOOM_MAX = 50;
 const ZOOM_SENSITIVITY = 0.005;
 
 interface Events {
-  toolChanged(): void;
+  changed(): void;
 }
 
 export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedTool extends Tool = Tool> {
@@ -21,6 +21,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   #cachedPageRect: DOMRect | null = null;
   #tool: SupportedTool = null!;
   #checkerPattern: CanvasPattern = null!;
+  #color: RGBA = [255, 0, 255, 255];
 
   readonly #emitter = new EventEmitter<Events>();
   readonly on: EventEmitter<Events>["on"] = this.#emitter.on.bind(this.#emitter);
@@ -100,7 +101,17 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   set tool(tool: SupportedTool) {
     this.#tool = tool;
     this.#tool.tileset = this.tileset;
-    this.#emitter.emit("toolChanged");
+    this.#tool.editor = this;
+    this.#emitter.emit("changed");
+  }
+
+  get color(): RGBA {
+    return this.#color;
+  }
+
+  set color(color: RGBA) {
+    this.#color = color;
+    this.#emitter.emit("changed");
   }
 
   constructor(tileset: Tileset, defaultTool: SupportedTool) {

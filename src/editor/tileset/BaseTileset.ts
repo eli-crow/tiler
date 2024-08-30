@@ -1,6 +1,7 @@
 import { SizedImageSource } from "../../ui/services/ClipboardService";
 import { EventEmitter } from "../events/EventEmitter";
 import type { RGBA, Tile, TilePosition } from "../model";
+import { SupportsFillTool } from "../tools/FillTool";
 import { SupportsPencilTool } from "../tools/PencilTool";
 import { Tool } from "../tools/Tool";
 
@@ -8,7 +9,7 @@ interface Events {
   dataChanged(): void;
 }
 
-export abstract class BaseTileset implements SupportsPencilTool {
+export abstract class BaseTileset implements SupportsPencilTool, SupportsFillTool {
   readonly #canvas: OffscreenCanvas;
   protected readonly context: OffscreenCanvasRenderingContext2D;
   readonly tileSize: number;
@@ -91,6 +92,11 @@ export abstract class BaseTileset implements SupportsPencilTool {
     const imageData = this.context.createImageData(1, 1);
     imageData.data.set(color);
     this.context.putImageData(imageData, x, y);
+  }
+
+  getPixel(x: number, y: number): RGBA {
+    const data = this.context.getImageData(x, y, 1, 1).data;
+    return [data[0], data[1], data[2], data[3]];
   }
 
   invalidate() {

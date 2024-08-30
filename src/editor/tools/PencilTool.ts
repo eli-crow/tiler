@@ -19,17 +19,7 @@ type ToolState =
 
 export class PencilTool extends Tool<SupportsPencilTool> {
   #state: ToolState = { type: "idle" };
-  #color: RGBA = [255, 255, 255, 255];
   #erase = false;
-
-  get color() {
-    return this.#color;
-  }
-
-  set color(value: RGBA) {
-    this.#color = value;
-    this.notifyChanged();
-  }
 
   get erase() {
     return this.#erase;
@@ -41,7 +31,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
   }
 
   private get resolvedColor() {
-    return this.#erase ? TRANSPARENT : this.#color;
+    return this.#erase ? TRANSPARENT : this.editor.color;
   }
 
   constructor(erase: boolean = false) {

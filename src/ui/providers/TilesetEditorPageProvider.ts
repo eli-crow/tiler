@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { EXAMPLE_TERRAIN_TILES, GODOT_NEIGHBORS, GODOT_TILES } from "../../editor/model";
+import { EXAMPLE_TERRAIN_TILES, GODOT_NEIGHBORS, GODOT_TILES, RGBA } from "../../editor/model";
 import { BaseTileset } from "../../editor/tileset/BaseTileset";
 import { Tileset4x4Plus } from "../../editor/tileset/Tileset4x4Plus";
 import { Tileset4x4PlusJigsaw } from "../../editor/tileset/Tileset4x4PlusJigsaw";
 import { Tileset4x4PlusTerrain } from "../../editor/tileset/Tileset4x4PlusTerrain";
 import { TilesetEditor } from "../../editor/TilesetEditor";
+import { FillTool } from "../../editor/tools/FillTool";
 import { JigsawTileTool } from "../../editor/tools/JigsawTileTool";
 import { PencilTool } from "../../editor/tools/PencilTool";
 import { TerrainTileTool } from "../../editor/tools/TerrainTileTool";
@@ -28,14 +29,17 @@ export type TilesetEditorPageContext = {
   supportedTools: readonly Tool[];
   tool: Tool;
   setTool: (tool: Tool) => void;
+  color: RGBA;
+  setColor: (color: RGBA) => void;
 };
 
 const pencilTool = new PencilTool();
 const eraserTool = new PencilTool(true);
 const jigsawTileTool = new JigsawTileTool();
 const terrainTileTool = new TerrainTileTool();
+const fillTool = new FillTool();
 
-export const TOOLS = [pencilTool, eraserTool, jigsawTileTool, terrainTileTool];
+export const TOOLS = [pencilTool, eraserTool, fillTool, jigsawTileTool, terrainTileTool];
 
 const tileset4x4Plus = new Tileset4x4Plus();
 const tileset4x4PlusJigsaw = new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES);
@@ -60,6 +64,7 @@ function getDefaultToolForTileset<T extends BaseTileset>(tileset: T) {
 export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const [tilesetName, _setTilesetName] = useState("4x4Plus Example");
   const [mode, setMode] = useState<TilesetEditorPageMode>("raw");
+  const [color, setColor] = useState<RGBA>([255, 255, 255, 255]);
 
   let tileset: BaseTileset;
   let editor: TilesetEditor;
@@ -80,11 +85,12 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const supportedTools = TOOLS.filter((t) => t.supportsTileset(tileset));
 
   editor.tool = tool;
+  editor.color = color;
   if (!tileset.supportsTool(tool)) {
     setTool(getDefaultToolForTileset(tileset));
   }
 
-  return { mode, setMode, tool, setTool, tileset, editor, tilesetName, supportedTools };
+  return { mode, setMode, tool, setTool, color, setColor, tileset, editor, tilesetName, supportedTools };
 }
 
 export function useTileset() {
@@ -102,8 +108,8 @@ export function useTilesetEditor() {
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
   const editor = pageContext.editor;
   useEffect(() => {
-    editor.on("toolChanged", forceUpdate);
-    return () => editor.off("toolChanged", forceUpdate);
+    editor.on("changed", forceUpdate);
+    return () => editor.off("changed", forceUpdate);
   }, []);
   return editor;
 }
