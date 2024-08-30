@@ -62,6 +62,21 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     this.#tiles[y][x] = tile;
   }
 
+  resize(tileXCount: number, tileYCount: number) {
+    const newTiles: TerrainTileGrid = Array.from({ length: tileYCount }, () =>
+      Array.from({ length: tileXCount }, () => false)
+    );
+    const offsetX = Math.floor((tileXCount - this.#tiles[0].length) / 2);
+    const offsetY = Math.floor((tileYCount - this.#tiles.length) / 2);
+    this.#tiles.forEach((row, y) => {
+      row.forEach((tile, x) => {
+        newTiles[y + offsetY][x + offsetX] = tile;
+      });
+    });
+    this.#tiles = newTiles;
+    this.invalidate();
+  }
+
   randomize() {
     this.#tiles.forEach((row) => {
       row.forEach((_, x) => {

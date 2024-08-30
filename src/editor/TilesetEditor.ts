@@ -157,58 +157,58 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   }
 
   #draw() {
+    this.#context.reset();
     this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+
+    this.#transformToCanvas();
     this.#drawArtboard();
     this.#drawTileset();
     this.#drawTileGuides();
   }
 
   #drawArtboard() {
-    this.#context.resetTransform();
-    this.#context.globalCompositeOperation = "source-over";
-    this.#transformToCanvas();
+    this.#context.imageSmoothingEnabled = false;
     this.#context.fillStyle = this.#checkerPattern;
     this.#context.fillRect(0, 0, this.tileset.width, this.tileset.height);
   }
 
   #drawTileset() {
-    this.#context.resetTransform();
-    this.#context.globalCompositeOperation = "source-over";
     this.#context.imageSmoothingEnabled = false;
-    this.#transformToCanvas();
     this.#context.drawImage(this.tileset.imageSource, 0, 0);
   }
 
   #drawTileGuides() {
     const { width, height, tileSize } = this.tileset;
-    const context = this.#context;
-    context.resetTransform();
-    context.lineWidth = 1;
-    context.globalCompositeOperation = "color-dodge";
-    context.strokeStyle = "rgba(255, 0, 255, 0.5)";
-    context.beginPath();
+    const ctx = this.#context;
+    ctx.lineWidth = 1 / this.viewZoom;
+    ctx.globalCompositeOperation = "color-dodge";
+    ctx.strokeStyle = "rgba(255, 0, 255, 0.5)";
 
-    const { x: x0, y: y0 } = this.#tilesetToCanvasPoint({ x: 0, y: 0 });
-    const { x: x1, y: y1 } = this.#tilesetToCanvasPoint({ x: width, y: height });
+    ctx.beginPath();
+
+    const x0 = 0;
+    const y0 = 0;
+    const x1 = width;
+    const y1 = height;
 
     for (let x = tileSize; x < width - 1; x += tileSize) {
-      const xCanvas = this.#tilesetToCanvasPoint({ x, y: 0 }).x;
-      context.moveTo(xCanvas, y0);
-      context.lineTo(xCanvas, y1);
+      ctx.moveTo(x, y0);
+      ctx.lineTo(x, y1);
     }
     for (let y = tileSize; y < height; y += tileSize) {
-      const yCanvas = this.#tilesetToCanvasPoint({ x: 0, y }).y;
-      context.moveTo(x0, yCanvas);
-      context.lineTo(x1, yCanvas);
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x1, y);
     }
-    context.stroke();
+    ctx.stroke();
   }
 
   #transformToCanvas() {
-    this.#context.translate(-this.viewX, -this.viewY);
-    this.#context.translate(this.#canvas.width / 2, this.#canvas.height / 2);
-    this.#context.scale(this.viewZoom, this.viewZoom);
-    this.#context.translate(this.tileset.width / -2, this.tileset.height / -2);
+    const ch = this.#canvas.height;
+    const cw = this.#canvas.width;
+    const vx = this.viewX + this.tileset.width / 2;
+    const vy = this.viewY + this.tileset.height / 2;
+    const vz = this.viewZoom;
+    this.#context.setTransform(vz, 0, 0, vz, cw / 2 - vx * vz, ch / 2 - vy * vz);
   }
 
   #handleResize = () => {
@@ -250,23 +250,23 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
       this.viewZoom /= 1 + event.deltaY * ZOOM_SENSITIVITY;
       this.viewZoom = Math.max(1, this.#viewZoom);
     } else {
-      this.viewX += event.deltaX;
-      this.viewY += event.deltaY;
+      this.viewX += event.deltaX / this.viewZoom;
+      this.viewY += event.deltaY / this.viewZoom;
     }
 
     this.#draw();
   };
 
-  #transformCanvasPointToTilesetPoint(point: PixelPoint): PixelPoint {
-    const x = (point.x - this.#canvas.width / 2 + this.viewX) / this.viewZoom + this.tileset.width / 2;
-    const y = (point.y - this.#canvas.height / 2 + this.viewY) / this.viewZoom + this.tileset.height / 2;
-    return { x, y };
-  }
-
-  #tilesetToCanvasPoint(point: PixelPoint): PixelPoint {
-    const x = (point.x - this.tileset.width / 2) * this.viewZoom + this.#canvas.width / 2 - this.viewX;
-    const y = (point.y - this.tileset.height / 2) * this.viewZoom + this.#canvas.height / 2 - this.viewY;
-    return { x, y };
+  #canvasPointToTilesetPoint(point: PixelPoint): PixelPoint {
+    const { x, y } = point;
+    const { viewX, viewY, viewZoom } = this;
+    const halfCanvasWidth = this.#canvas.width / 2;
+    const halfCanvasHeight = this.#canvas.height / 2;
+    const halfTilesetWidth = this.tileset.width / 2;
+    const halfTilesetHeight = this.tileset.height / 2;
+    const tilesetX = (x - halfCanvasWidth) / viewZoom + halfTilesetWidth + viewX;
+    const tilesetY = (y - halfCanvasHeight) / viewZoom + halfTilesetHeight + viewY;
+    return { x: tilesetX, y: tilesetY };
   }
 
   #getCanvasPixelFromEvent(event: PointerEvent): PixelPoint {
@@ -280,6 +280,6 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
 
   #getTilesetPixelFromEvent(event: PointerEvent): PixelPoint {
     const canvasPoint = this.#getCanvasPixelFromEvent(event);
-    return this.#transformCanvasPointToTilesetPoint(canvasPoint);
+    return this.#canvasPointToTilesetPoint(canvasPoint);
   }
 }
