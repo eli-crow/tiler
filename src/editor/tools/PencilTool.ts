@@ -8,7 +8,7 @@ export type SupportsPencilTool = {
   setPixel(x: number, y: number, color: RGBA): void;
 };
 
-export function isSupportsPencilTool(value: any): value is SupportsPencilTool {
+function isSupportsPencilTool(value: any): value is SupportsPencilTool {
   return typeof value.setPixel === "function";
 }
 

@@ -5,7 +5,7 @@ export type SupportsTerrainTileTool = {
   setTerrainTile(x: number, y: number, tile: boolean): void;
 };
 
-export function isSupportsTerrainTileTool(value: any): value is SupportsTerrainTileTool {
+function isSupportsTerrainTileTool(value: any): value is SupportsTerrainTileTool {
   return typeof value.setTerrainTile === "function";
 }
 

@@ -6,7 +6,7 @@ export type SupportsJigsawTileTool = {
   setTile(x: number, y: number, tile: Tile): void;
 };
 
-export function isSupportsJigsawTileTool(value: any): value is SupportsJigsawTileTool {
+function isSupportsJigsawTileTool(value: any): value is SupportsJigsawTileTool {
   return typeof value.setTile === "function";
 }
 
