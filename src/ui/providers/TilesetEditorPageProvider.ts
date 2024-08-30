@@ -80,6 +80,9 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const supportedTools = TOOLS.filter((t) => t.supportsTileset(tileset));
 
   editor.tool = tool;
+  if (!tileset.supportsTool(tool)) {
+    setTool(getDefaultToolForTileset(tileset));
+  }
 
   return { mode, setMode, tool, setTool, tileset, editor, tilesetName, supportedTools };
 }
