@@ -2,6 +2,7 @@ import { SizedImageSource } from "../../ui/services/ClipboardService";
 import { EventEmitter } from "../events/EventEmitter";
 import type { RGBA, Tile, TilePosition } from "../model";
 import { SupportsPencilTool } from "../tools/PencilTool";
+import { Tool } from "../tools/Tool";
 
 interface Events {
   dataChanged(): void;
@@ -119,5 +120,9 @@ export abstract class BaseTileset implements SupportsPencilTool {
       })
       .sort((a, b) => b[1] - a[1]);
     return rankedColors;
+  }
+
+  supportsTool<T extends Tool>(tool: T): boolean {
+    return tool.supportsTileset(this);
   }
 }

@@ -55,7 +55,7 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
     return this.#tiles[y]?.[x] ?? null;
   }
 
-  setTile(x: number, y: number, tile: boolean) {
+  setTerrainTile(x: number, y: number, tile: boolean) {
     if (!this.tilePositionInRange(x, y)) {
       return;
     }

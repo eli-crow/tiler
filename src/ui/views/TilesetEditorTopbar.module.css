@@ -1,10 +1,47 @@
 .root {
   grid-area: topbar;
   display: flex;
-  gap: 8px;
   align-items: center;
-  width: 100%;
   padding: 0 16px;
   position: relative;
   z-index: 1;
+  border-radius: var(--radius-lg);
+  justify-self: flex-start;
+}
+
+.title {
+  font-size: var(--text-size-title);
+  font-weight: 500;
+  margin-right: 32px;
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  margin-right: 32px;
+}
+.back:hover {
+  text-decoration: underline;
+}
+
+.modeGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.mode {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: var(--text-inactive);
+  font: inherit;
+  font-weight: 500;
+}
+.mode:is(:hover, [aria-current="true"]) {
+  background-color: var(--color-primary);
+  color: white;
 }

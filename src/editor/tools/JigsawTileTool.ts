@@ -1,9 +1,14 @@
 import { Tile } from "../model";
+import { BaseTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
 export type SupportsJigsawTileTool = {
   setTile(x: number, y: number, tile: Tile): void;
 };
+
+export function isSupportsJigsawTileTool(value: any): value is SupportsJigsawTileTool {
+  return typeof value.setTile === "function";
+}
 
 type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
@@ -18,6 +23,10 @@ export class JigsawTileTool extends Tool<SupportsJigsawTileTool> {
   set tile(tile: Tile) {
     this.#tile = tile;
     this.notifyChanged();
+  }
+
+  supportsTileset<T extends BaseTileset>(tileset: T): tileset is T & SupportsJigsawTileTool {
+    return isSupportsJigsawTileTool(tileset);
   }
 
   onPointerDown(x: number, y: number, event: PointerEvent) {

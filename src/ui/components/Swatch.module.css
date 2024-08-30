@@ -1,6 +1,6 @@
 .root {
   appearance: none;
   aspect-ratio: 1;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 0;
 }

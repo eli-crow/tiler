@@ -3,7 +3,7 @@
   align-self: center;
   position: relative;
   z-index: 1;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .toolGroup {
@@ -21,7 +21,7 @@
   appearance: none;
   border: 0;
   background-color: transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 .tool:not(:hover, [data-active="true"]) {
   color: var(--icon-inactive);

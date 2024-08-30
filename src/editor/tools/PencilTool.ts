@@ -1,4 +1,5 @@
 import { RGBA } from "../model";
+import { BaseTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
 const TRANSPARENT: RGBA = [0, 0, 0, 0];
@@ -6,6 +7,10 @@ const TRANSPARENT: RGBA = [0, 0, 0, 0];
 export type SupportsPencilTool = {
   setPixel(x: number, y: number, color: RGBA): void;
 };
+
+export function isSupportsPencilTool(value: any): value is SupportsPencilTool {
+  return typeof value.setPixel === "function";
+}
 
 type ToolState =
   | { type: "idle" }
@@ -42,6 +47,10 @@ export class PencilTool extends Tool<SupportsPencilTool> {
   constructor(erase: boolean = false) {
     super();
     this.#erase = erase;
+  }
+
+  supportsTileset<T extends BaseTileset>(tileset: T): tileset is T & SupportsPencilTool {
+    return isSupportsPencilTool(tileset);
   }
 
   onPointerDown(x: number, y: number, event: PointerEvent) {

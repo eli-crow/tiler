@@ -24,7 +24,6 @@ export function TilesetEditorView() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      console.log(e.metaKey, e.ctrlKey, e.key);
       if ((e.metaKey || e.ctrlKey) && e.key === "c") {
         e.preventDefault();
         e.stopPropagation();
