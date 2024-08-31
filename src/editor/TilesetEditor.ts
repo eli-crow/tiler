@@ -203,8 +203,11 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
 
   #handleTouchStart = (startE: TouchEvent) => {
     startE.preventDefault();
+    startE.stopPropagation();
 
-    if (startE.touches.length !== 2) return;
+    if (startE.touches.length !== 2) {
+      return;
+    }
 
     this.#isGesturing = true;
 
@@ -220,6 +223,8 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     let lastMoveMidpointY = startMidpointY;
 
     const handleMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return;
+
       const [move1, move2] = e.touches;
       const movePinchDistance = Math.hypot(move2.pageX - move1.pageX, move2.pageY - move1.pageY);
       lastMoveMidpointX = (move1.pageX + move2.pageX) / 2;
@@ -240,6 +245,9 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
         const deltaDistance = Math.hypot(lastMoveMidpointX - startMidpointX, lastMoveMidpointY - startMidpointY);
         const duration = e.timeStamp - startE.timeStamp;
         if (deltaDistance < UNDO_GESTURE_MAX_DISTANCE && duration < UNDO_GESTURE_DELAY_MS) {
+          // HACK: pointer events and touch events don't play nice, but undoing twice here seems to work for now
+          this.undo();
+          this.undo();
           this.undo();
         }
         this.#isGesturing = false;
