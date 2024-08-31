@@ -10,7 +10,7 @@ import {
 } from "../model";
 import { SupportsPencilTool } from "../tools/PencilTool";
 import { SupportsTerrainTileTool } from "../tools/TerrainTileTool";
-import { BaseTileset } from "./BaseTileset";
+import { BaseTileset, ProxyTileset } from "./BaseTileset";
 import type { Tileset4x4PlusJigsaw } from "./Tileset4x4PlusJigsaw";
 
 const BIT_S = 0b100000000;
@@ -23,9 +23,12 @@ const BIT_BR = 0b000000100;
 const BIT_BL = 0b000000010;
 const BIT_TL = 0b000000001;
 
-export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrainTileTool, SupportsPencilTool {
+export class Tileset4x4PlusTerrain
+  extends BaseTileset
+  implements SupportsTerrainTileTool, SupportsPencilTool, ProxyTileset
+{
   #tiles: TerrainTileGrid;
-  #jigsaw: Tileset4x4PlusJigsaw;
+  readonly sourceTileset: Tileset4x4PlusJigsaw;
   #tileNeighbors: FlattenedTileNeighborGrid;
 
   constructor(jigsaw: Tileset4x4PlusJigsaw, neighborGrid: TileNeighborGrid, tiles: TerrainTileGrid) {
@@ -33,8 +36,8 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
 
     this.#tiles = tiles;
 
-    this.#jigsaw = jigsaw;
-    this.#jigsaw.on("dataChanged", this.#handleJigsawDataChanged);
+    this.sourceTileset = jigsaw;
+    this.sourceTileset.on("dataChanged", this.#handleJigsawDataChanged);
 
     this.#tileNeighbors = flattenTileNeighborGrid(neighborGrid);
 
@@ -43,12 +46,12 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
   }
 
   invalidate() {
-    this.#jigsaw.invalidate();
+    this.sourceTileset.invalidate();
     this.emit("dataChanged");
   }
 
   getUniqueColors() {
-    return this.#jigsaw.getUniqueColors();
+    return this.sourceTileset.getUniqueColors();
   }
 
   getTile(x: number, y: number): boolean | null {
@@ -104,7 +107,7 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
 
     const offsetX = x % this.tileSize;
     const offsetY = y % this.tileSize;
-    this.#jigsaw.setTilePixel(tile, offsetX, offsetY, color);
+    this.sourceTileset.setTilePixel(tile, offsetX, offsetY, color);
   }
 
   getTileAtPoint(x: number, y: number): TerrainTile | null {
@@ -157,7 +160,7 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
       return null;
     }
 
-    const jigsawTile = this.#jigsaw.getTile(position.x, position.y);
+    const jigsawTile = this.sourceTileset.getTile(position.x, position.y);
     return jigsawTile;
   }
 
@@ -203,7 +206,7 @@ export class Tileset4x4PlusTerrain extends BaseTileset implements SupportsTerrai
         if (!jigsawTile) {
           return;
         }
-        const imageData = this.#jigsaw.getTileImageData(jigsawTile);
+        const imageData = this.sourceTileset.getTileImageData(jigsawTile);
         const targetX = x * this.tileSize;
         const targetY = y * this.tileSize;
         this.context.putImageData(imageData, targetX, targetY);

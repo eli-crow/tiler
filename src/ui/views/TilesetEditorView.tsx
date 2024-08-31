@@ -9,7 +9,7 @@ export function TilesetEditorView() {
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
 
   usePasteImageSourceCallback((imageSource) => {
-    editor.tileset.setFromImageSource(imageSource);
+    editor.tileset.setSourceDataFromImageSource(imageSource);
     editor.tileset.invalidate();
   });
 
@@ -28,6 +28,12 @@ export function TilesetEditorView() {
         e.preventDefault();
         e.stopPropagation();
         editor.copyToClipboard();
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        e.preventDefault();
+        e.stopPropagation();
+        editor.undo();
       }
     };
 

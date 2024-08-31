@@ -9,6 +9,14 @@ interface Events {
   dataChanged(): void;
 }
 
+export interface ProxyTileset {
+  sourceTileset: BaseTileset;
+}
+
+function isProxyTileset(tileset: any): tileset is ProxyTileset {
+  return tileset instanceof BaseTileset && "sourceTileset" in tileset;
+}
+
 export abstract class BaseTileset implements SupportsPencilTool, SupportsFillTool {
   readonly #canvas: OffscreenCanvas;
   protected readonly context: OffscreenCanvasRenderingContext2D;
@@ -20,6 +28,8 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
   readonly once: EventEmitter<Events>["once"] = this.#emitter.once.bind(this.#emitter);
   readonly off: EventEmitter<Events>["off"] = this.#emitter.off.bind(this.#emitter);
   protected readonly emit: EventEmitter<Events>["emit"] = this.#emitter.emit.bind(this.#emitter);
+  #resolveLoaded!: () => void;
+  readonly loaded: Promise<void>;
 
   get width() {
     return this.#canvas.width;
@@ -42,6 +52,23 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
 
     this.context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true, antialias: false })!;
     this.context.imageSmoothingEnabled = false;
+
+    this.loaded = new Promise((resolve) => {
+      this.#resolveLoaded = resolve;
+    });
+
+    this.load().then(() => this.#onLoaded());
+  }
+
+  protected async load() {
+    if (isProxyTileset(this)) {
+      await this.sourceTileset.loaded;
+    }
+  }
+
+  async #onLoaded() {
+    this.invalidate();
+    this.#resolveLoaded();
   }
 
   tilePositionInRange(x: number, y: number): boolean {
@@ -68,16 +95,20 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     return new Promise<void>((resolve) => {
       const image = new Image();
       image.onload = () => {
-        this.setFromImageSource(image);
+        this.setSourceDataFromImageSource(image);
         resolve();
       };
       image.src = url;
     });
   }
 
-  setFromImageSource(image: CanvasImageSource) {
-    this.context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
-    this.context.drawImage(image, 0, 0);
+  setSourceDataFromImageSource(image: CanvasImageSource) {
+    if (isProxyTileset(this)) {
+      this.sourceTileset.setSourceDataFromImageSource(image);
+    } else {
+      this.context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+      this.context.drawImage(image, 0, 0);
+    }
   }
 
   getTileImageData(tile: Tile): ImageData {
@@ -103,8 +134,30 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     this.#emitter.emit("dataChanged");
   }
 
-  getImageData(x: number, y: number, width: number, height: number): ImageData {
+  getImageData(): ImageData;
+  getImageData(x: number, y: number, width: number, height: number): ImageData;
+  getImageData(x?: number, y?: number, width?: number, height?: number): ImageData {
+    x ??= 0;
+    y ??= 0;
+    width ??= this.#canvas.width;
+    height ??= this.#canvas.height;
     return this.context.getImageData(x, y, width, height);
+  }
+
+  getSourceImageData(): ImageData {
+    if (isProxyTileset(this)) {
+      return this.sourceTileset.getSourceImageData();
+    } else {
+      return this.getImageData();
+    }
+  }
+
+  putSourceImageData(imageData: ImageData) {
+    if (isProxyTileset(this)) {
+      this.sourceTileset.putSourceImageData(imageData);
+    } else {
+      this.context.putImageData(imageData, 0, 0);
+    }
   }
 
   getUniqueColors(): [RGBA, number][] {

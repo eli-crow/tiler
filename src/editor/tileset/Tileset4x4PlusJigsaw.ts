@@ -2,32 +2,35 @@ import type { JigsawTileGrid, RGBA, Tile, TileInnerCorner } from "../model";
 import { tilesMatch } from "../model";
 import { SupportsJigsawTileTool } from "../tools/JigsawTileTool";
 import { SupportsPencilTool } from "../tools/PencilTool";
-import { BaseTileset } from "./BaseTileset";
+import { BaseTileset, ProxyTileset } from "./BaseTileset";
 import type { Tileset4x4Plus } from "./Tileset4x4Plus";
 
-export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawTileTool, SupportsPencilTool {
+export class Tileset4x4PlusJigsaw
+  extends BaseTileset
+  implements SupportsJigsawTileTool, SupportsPencilTool, ProxyTileset
+{
   readonly tiles: JigsawTileGrid;
-  readonly tileset: Tileset4x4Plus;
+  readonly sourceTileset: Tileset4x4Plus;
 
   constructor(tileset: Tileset4x4Plus, tiles: JigsawTileGrid) {
     super(tileset.tileSize, tiles[0].length, tiles.length);
 
     this.tiles = tiles;
-    this.tileset = tileset;
-    this.tileset.on("dataChanged", this.#handleTilesetDataChanged);
+    this.sourceTileset = tileset;
+    this.sourceTileset.on("dataChanged", this.#handleTilesetDataChanged);
   }
 
   invalidate() {
-    this.tileset.invalidate();
+    this.sourceTileset.invalidate();
     this.emit("dataChanged");
   }
 
   getUniqueColors() {
-    return this.tileset.getUniqueColors();
+    return this.sourceTileset.getUniqueColors();
   }
 
   getTileImageData(tile: Tile): ImageData {
-    const data = this.tileset.getTileImageData(tile);
+    const data = this.sourceTileset.getTileImageData(tile);
     tile.corners.forEach((corner) => this.#applyInnerCorner(data, corner));
     return data;
   }
@@ -85,7 +88,7 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
       const size = this.tileSize;
       const x = tile.x * size + offsetX;
       const y = tile.y * size + offsetY;
-      this.tileset.setPixel(x, y, color);
+      this.sourceTileset.setPixel(x, y, color);
     }
   }
 
@@ -121,7 +124,7 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
   #setInnerCornerTilePixel(offsetX: number, offsetY: number, color: RGBA) {
     const x = 4 * this.tileSize + offsetX;
     const y = 0 * this.tileSize + offsetY;
-    this.tileset.setPixel(x, y, color);
+    this.sourceTileset.setPixel(x, y, color);
   }
 
   #getInnerCornerImageData(corner: TileInnerCorner) {
@@ -149,7 +152,7 @@ export class Tileset4x4PlusJigsaw extends BaseTileset implements SupportsJigsawT
     const cornerTileStartX = 4 * size;
     const cornerTileStartY = 0;
 
-    const imageData = this.tileset.getImageData(
+    const imageData = this.sourceTileset.getImageData(
       cornerTileStartX + offsetX,
       cornerTileStartY + offsetY,
       size / 2,

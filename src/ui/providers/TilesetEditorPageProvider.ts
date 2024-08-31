@@ -45,9 +45,7 @@ const tileset4x4Plus = new Tileset4x4Plus();
 const tileset4x4PlusJigsaw = new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES);
 const tileset4x4PlusTerrain = new Tileset4x4PlusTerrain(tileset4x4PlusJigsaw, GODOT_NEIGHBORS, EXAMPLE_TERRAIN_TILES);
 
-const editor4x4Plus = new TilesetEditor(tileset4x4Plus, pencilTool);
-const editor4x4PlusJigsaw = new TilesetEditor(tileset4x4PlusJigsaw, pencilTool);
-const editor4x4PlusTerrain = new TilesetEditor(tileset4x4PlusTerrain, pencilTool);
+const editor: TilesetEditor = new TilesetEditor(tileset4x4Plus, pencilTool);
 
 function getDefaultToolForTileset<T extends BaseTileset>(tileset: T) {
   if (tileset instanceof Tileset4x4Plus) {
@@ -67,16 +65,12 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const [color, setColor] = useState<RGBA>([255, 255, 255, 255]);
 
   let tileset: BaseTileset;
-  let editor: TilesetEditor;
   if (mode === "raw") {
     tileset = tileset4x4Plus;
-    editor = editor4x4Plus;
   } else if (mode === "jigsaw") {
     tileset = tileset4x4PlusJigsaw;
-    editor = editor4x4PlusJigsaw;
   } else if (mode === "terrain") {
     tileset = tileset4x4PlusTerrain;
-    editor = editor4x4PlusTerrain;
   } else {
     throw new Error(`Invalid editor mode: ${mode}`);
   }
@@ -86,6 +80,7 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
 
   editor.tool = tool;
   editor.color = color;
+  editor.tileset = tileset;
   if (!tileset.supportsTool(tool)) {
     setTool(getDefaultToolForTileset(tileset));
   }

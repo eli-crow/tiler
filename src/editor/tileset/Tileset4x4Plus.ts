@@ -7,8 +7,9 @@ const TILE_ROWS = 4;
 export class Tileset4x4Plus extends BaseTileset {
   constructor() {
     super(16, TILE_COLUMNS, TILE_ROWS);
-    this.setFromImageUrlAsync(sampleImage).then(() => {
-      this.invalidate();
-    });
+  }
+
+  protected async load() {
+    await this.setFromImageUrlAsync(sampleImage);
   }
 }
