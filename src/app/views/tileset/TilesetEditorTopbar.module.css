@@ -49,9 +49,9 @@
   font-weight: 500;
   color: var(--text);
 }
-.mode:is(:hover, [aria-current="true"]) {
+.mode:is(:hover, [aria-current="true"], [aria-checked="true"]) {
   background-color: var(--bg-surface-active);
 }
-.mode:not(:hover, [aria-current="true"]) {
+.mode:not(:hover, [aria-current="true"], [aria-checked="true"]) {
   color: var(--text-inactive);
 }

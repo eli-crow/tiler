@@ -1,0 +1,20 @@
+.root {
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  appearance: none;
+  border: 0;
+  background-color: transparent;
+  border-radius: var(--radius-md);
+  color: var(--text);
+}
+.root:not(:hover, [data-active="true"], [aria-active="true"], [aria-checked="true"]) {
+  color: var(--icon-inactive);
+}
+.root:hover {
+  background-color: var(--bg-surface-active);
+}
+.root:is([data-active="true"], [aria-active="true"], [aria-checked="true"]) {
+  background-color: var(--bg-surface-active);
+}

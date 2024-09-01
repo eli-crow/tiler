@@ -30,27 +30,10 @@ export function useTilesetEditorPageContext() {
 }
 
 export type TilesetEditorPageMode = "raw" | "jigsaw" | "terrain";
-export type TilesetEditorPageContext = {
-  tilesetName: string;
-  mode: TilesetEditorPageMode;
-  setMode: (mode: TilesetEditorPageMode) => void;
-  tileset: BaseTileset;
-  editor: TilesetEditor;
-  supportedTools: readonly Tool[];
-  tool: Tool;
-  setTool: (tool: Tool) => void;
-  color: RGBA;
-  setColor: (color: RGBA) => void;
-  saveTilesetDocument: () => Promise<void>;
-  loadTilesetDocument: (id: TilesetDocument["id"]) => Promise<void>;
-  initExampleTilesetDocument: () => Promise<void>;
-  setTilesetName: (name: string) => void;
-};
+export type TilesetEditorPageContext = ReturnType<typeof useTilesetEditorPageState>;
 
-export function useTilesetEditorPageState(): TilesetEditorPageContext {
+export function useTilesetEditorPageState() {
   const [doc, setDoc] = useState<TilesetDocument | null>(null);
-  const [mode, setMode] = useState<TilesetEditorPageMode>("raw");
-  const [color, setColor] = useState<RGBA>([255, 255, 255, 255]);
 
   const tileset4x4Plus = useMemo(() => new Tileset4x4Plus(), []);
   const tileset4x4PlusJigsaw = useMemo(() => new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES), [tileset4x4Plus]);
@@ -63,6 +46,7 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
     [tileset4x4Plus]
   );
 
+  const [mode, setMode] = useState<TilesetEditorPageMode>("raw");
   let tileset: BaseTileset;
   if (mode === "raw") {
     tileset = tileset4x4Plus;
@@ -74,12 +58,15 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
     throw new Error(`Invalid editor mode: ${mode}`);
   }
 
+  const [showTileGuides, setShowTileGuides] = useState(editor.showTileGuides);
+  const [color, setColor] = useState<RGBA>(editor.color);
   const [tool, setTool] = useState<Tool>(getDefaultToolForTileset(tileset));
   const supportedTools = TOOLS.filter((t) => t.supportsTileset(tileset));
 
   editor.tool = tool;
   editor.color = color;
   editor.tileset = tileset;
+  editor.showTileGuides = showTileGuides;
   if (!tileset.supportsTool(tool)) {
     setTool(getDefaultToolForTileset(tileset));
   }
@@ -126,6 +113,8 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
     setColor,
     tileset,
     editor,
+    showTileGuides,
+    setShowTileGuides,
     tilesetName: doc?.name ?? "",
     saveTilesetDocument,
     loadTilesetDocument,

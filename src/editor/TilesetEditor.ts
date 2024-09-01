@@ -171,6 +171,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     if (this.#showTileGuides === value) return;
     this.#showTileGuides = value;
     this.#emitter.emit("changed");
+    this.#draw();
   }
 
   // region Drawing
@@ -184,7 +185,9 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#transformToCanvas();
     this.#drawArtboard();
     this.#drawTileset();
-    this.#drawTileGuides();
+    if (this.#showTileGuides) {
+      this.#drawTileGuides();
+    }
   }
 
   #drawArtboard() {
@@ -223,6 +226,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
 
     ctx.stroke();
   }
+
   #generateCheckerPattern() {
     const checkerCanvas = document.createElement("canvas");
     const checkerContext = checkerCanvas.getContext("2d")!;

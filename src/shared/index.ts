@@ -10,7 +10,7 @@ export function mergeClasses(...classes: (string | undefined | null)[]): string 
   return classes.filter(Boolean).join(" ");
 }
 
-export type ExtendHTMLProps<Props extends object, Element extends HTMLElement = HTMLDivElement> = Omit<
+export type ExtendHTMLProps<Props extends object = never, Element extends HTMLElement = HTMLDivElement> = Omit<
   HTMLProps<Element>,
   keyof Props
 > &
