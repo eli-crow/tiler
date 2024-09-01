@@ -27,7 +27,7 @@ function EditableText({ value, onChange, tag: Tag = "p", className, ...otherProp
     setTimeout(() => e.target.select(), 0);
   };
 
-  const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
+  const handleBlur: FocusEventHandler<HTMLInputElement> = () => {
     setEditing(false);
     if (onChange && internalValue !== value) {
       onChange(internalValue);
