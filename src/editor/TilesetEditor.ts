@@ -1,7 +1,7 @@
 import { ClipboardService } from "@/shared/ClipboardService";
 import { CSSProperties } from "react";
-import { EventEmitter } from "./events/EventEmitter";
-import { PixelPoint, RGBA } from "./model";
+import { EventEmitter, IEventEmitter } from "./events/EventEmitter";
+import { colorsMatch, PixelPoint, RGBA } from "./model";
 import { BaseTileset } from "./tileset/BaseTileset";
 import { Tool } from "./tools/Tool";
 
@@ -17,124 +17,9 @@ interface Events {
   changed(): void;
 }
 
-export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedTool extends Tool = Tool> {
-  #tileset!: Tileset;
-  readonly #canvas: HTMLCanvasElement;
-  readonly #context: CanvasRenderingContext2D;
-  #container: HTMLElement = null!;
-  #cachedPageRect: DOMRect | null = null;
-  #tool: SupportedTool = null!;
-  #checkerPattern: CanvasPattern = null!;
-  #color: RGBA = [255, 0, 255, 255];
-  #isGesturing = false;
-  #viewZoom = 5;
-  #viewX = 0;
-  #viewY = 0;
-  readonly #undoStack: ImageData[] = [];
-
-  readonly #emitter = new EventEmitter<Events>();
-  readonly on: EventEmitter<Events>["on"] = this.#emitter.on.bind(this.#emitter);
-  readonly once: EventEmitter<Events>["once"] = this.#emitter.once.bind(this.#emitter);
-  readonly off: EventEmitter<Events>["off"] = this.#emitter.off.bind(this.#emitter);
-  protected readonly emit: EventEmitter<Events>["emit"] = this.#emitter.emit.bind(this.#emitter);
-
-  get tileset(): Tileset {
-    return this.#tileset;
-  }
-
-  set tileset(tileset: Tileset) {
-    if (tileset !== this.#tileset) {
-      this.#tileset.off("dataChanged", this.#onTilesetChanged);
-
-      this.#tileset = tileset;
-      this.#tileset.on("dataChanged", this.#onTilesetChanged);
-      this.#tool.tileset = tileset;
-      this.#emitter.emit("changed");
-      this.#draw();
-    }
-  }
-
-  private get viewZoom() {
-    return this.#viewZoom;
-  }
-
-  private set viewZoom(value: number) {
-    if (value < ZOOM_MIN) value = ZOOM_MIN;
-    if (value > ZOOM_MAX) value = ZOOM_MAX;
-    this.#viewZoom = value;
-
-    if (this.viewX < this.viewXMin) this.viewX = this.viewXMin;
-    if (this.viewX > this.viewXMax) this.viewX = this.viewXMax;
-    if (this.viewY < this.viewYMin) this.viewY = this.viewYMin;
-    if (this.viewY > this.viewYMax) this.viewY = this.viewYMax;
-  }
-
-  private get viewX() {
-    return this.#viewX;
-  }
-
-  private set viewX(value: number) {
-    const clamped = Math.min(Math.max(value, this.viewXMin), this.viewXMax);
-    this.#viewX = clamped;
-  }
-
-  private get viewXMin() {
-    const tilesetWidth = this.tileset.width / this.viewZoom;
-    const canvasWidth = this.#canvas.width;
-    const maxOffset = Math.abs(canvasWidth - tilesetWidth);
-    return -maxOffset;
-  }
-
-  private get viewXMax() {
-    const tilesetWidth = this.tileset.width / this.viewZoom;
-    const canvasWidth = this.#canvas.width;
-    const maxOffset = Math.abs(canvasWidth - tilesetWidth);
-    return maxOffset;
-  }
-
-  private get viewY() {
-    return this.#viewY;
-  }
-
-  private set viewY(value: number) {
-    const clamped = Math.min(Math.max(value, this.viewYMin), this.viewYMax);
-    this.#viewY = clamped;
-  }
-
-  private get viewYMin() {
-    const tilesetHeight = this.tileset.height / this.viewZoom;
-    const canvasHeight = this.#canvas.height;
-    const maxOffset = Math.abs(canvasHeight - tilesetHeight);
-    return -maxOffset;
-  }
-
-  private get viewYMax() {
-    const tilesetHeight = this.tileset.height / this.viewZoom;
-    const canvasHeight = this.#canvas.height;
-    const maxOffset = Math.abs(canvasHeight - tilesetHeight);
-    return maxOffset;
-  }
-
-  get tool(): SupportedTool {
-    return this.#tool;
-  }
-
-  set tool(tool: SupportedTool) {
-    this.#tool = tool;
-    this.#tool.tileset = this.tileset;
-    this.#tool.editor = this;
-    this.#emitter.emit("changed");
-  }
-
-  get color(): RGBA {
-    return this.#color;
-  }
-
-  set color(color: RGBA) {
-    this.#color = color;
-    this.#emitter.emit("changed");
-  }
-
+export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedTool extends Tool = Tool>
+  implements IEventEmitter<Events>
+{
   constructor(tileset: Tileset, defaultTool: SupportedTool) {
     this.#tileset = tileset;
     this.#tileset.on("dataChanged", this.#onTilesetChanged);
@@ -159,6 +44,186 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true })!;
     this.#context.imageSmoothingEnabled = false;
 
+    this.#generateCheckerPattern();
+  }
+
+  // region Events
+  readonly #emitter = new EventEmitter<Events>();
+  readonly on = this.#emitter.on.bind(this.#emitter);
+  readonly once = this.#emitter.once.bind(this.#emitter);
+  readonly off = this.#emitter.off.bind(this.#emitter);
+  protected readonly emit = this.#emitter.emit.bind(this.#emitter);
+
+  // region Tileset
+  #tileset!: Tileset;
+  get tileset(): Tileset {
+    return this.#tileset;
+  }
+  set tileset(tileset: Tileset) {
+    if (tileset !== this.#tileset) {
+      this.#tileset.off("dataChanged", this.#onTilesetChanged);
+
+      this.#tileset = tileset;
+      this.#tileset.on("dataChanged", this.#onTilesetChanged);
+      this.#tool.tileset = tileset;
+      this.#emitter.emit("changed");
+      this.#draw();
+    }
+  }
+  #onTilesetChanged = () => {
+    this.#draw();
+  };
+
+  // region Tools
+  #tool: SupportedTool = null!;
+  #color: RGBA = [255, 0, 255, 255];
+  get tool(): SupportedTool {
+    return this.#tool;
+  }
+  set tool(tool: SupportedTool) {
+    this.#tool = tool;
+    this.#tool.tileset = this.tileset;
+    this.#tool.editor = this;
+    this.#emitter.emit("changed");
+  }
+
+  get color(): RGBA {
+    return this.#color;
+  }
+  set color(color: RGBA) {
+    if (colorsMatch(this.#color, color)) return;
+    this.#color = color;
+    this.#emitter.emit("changed");
+  }
+
+  // region View Options
+  #viewZoom = 5;
+  #viewX = 0;
+  #viewY = 0;
+  #showTileGuides = true;
+
+  private get viewZoom() {
+    return this.#viewZoom;
+  }
+
+  private set viewZoom(value: number) {
+    if (value === this.#viewZoom) return;
+    if (value < ZOOM_MIN) value = ZOOM_MIN;
+    if (value > ZOOM_MAX) value = ZOOM_MAX;
+    this.#viewZoom = value;
+
+    if (this.viewX < this.viewXMin) this.viewX = this.viewXMin;
+    if (this.viewX > this.viewXMax) this.viewX = this.viewXMax;
+    if (this.viewY < this.viewYMin) this.viewY = this.viewYMin;
+    if (this.viewY > this.viewYMax) this.viewY = this.viewYMax;
+  }
+
+  private get viewX() {
+    return this.#viewX;
+  }
+  private set viewX(value: number) {
+    if (value === this.#viewX) return;
+    const clamped = Math.min(Math.max(value, this.viewXMin), this.viewXMax);
+    this.#viewX = clamped;
+  }
+
+  private get viewXMin() {
+    const tilesetWidth = this.tileset.width / this.viewZoom;
+    const canvasWidth = this.#canvas.width;
+    const maxOffset = Math.abs(canvasWidth - tilesetWidth);
+    return -maxOffset;
+  }
+
+  private get viewXMax() {
+    const tilesetWidth = this.tileset.width / this.viewZoom;
+    const canvasWidth = this.#canvas.width;
+    const maxOffset = Math.abs(canvasWidth - tilesetWidth);
+    return maxOffset;
+  }
+
+  private get viewY() {
+    return this.#viewY;
+  }
+  private set viewY(value: number) {
+    if (value === this.#viewY) return;
+    const clamped = Math.min(Math.max(value, this.viewYMin), this.viewYMax);
+    this.#viewY = clamped;
+  }
+
+  private get viewYMin() {
+    const tilesetHeight = this.tileset.height / this.viewZoom;
+    const canvasHeight = this.#canvas.height;
+    const maxOffset = Math.abs(canvasHeight - tilesetHeight);
+    return -maxOffset;
+  }
+
+  private get viewYMax() {
+    const tilesetHeight = this.tileset.height / this.viewZoom;
+    const canvasHeight = this.#canvas.height;
+    const maxOffset = Math.abs(canvasHeight - tilesetHeight);
+    return maxOffset;
+  }
+
+  get showTileGuides() {
+    return this.#showTileGuides;
+  }
+  set showTileGuides(value: boolean) {
+    if (this.#showTileGuides === value) return;
+    this.#showTileGuides = value;
+    this.#emitter.emit("changed");
+  }
+
+  // region Drawing
+  readonly #canvas: HTMLCanvasElement;
+  readonly #context: CanvasRenderingContext2D;
+  #checkerPattern: CanvasPattern = null!;
+
+  #draw() {
+    this.#context.reset();
+    this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+    this.#transformToCanvas();
+    this.#drawArtboard();
+    this.#drawTileset();
+    this.#drawTileGuides();
+  }
+
+  #drawArtboard() {
+    this.#context.imageSmoothingEnabled = false;
+    this.#context.fillStyle = this.#checkerPattern;
+    this.#context.fillRect(0, 0, this.tileset.width, this.tileset.height);
+  }
+
+  #drawTileset() {
+    this.#context.imageSmoothingEnabled = false;
+    this.#context.drawImage(this.tileset.imageSource, 0, 0);
+  }
+
+  #drawTileGuides() {
+    const { width, height, tileSize } = this.tileset;
+    const ctx = this.#context;
+    ctx.lineWidth = 1 / this.viewZoom;
+    ctx.globalCompositeOperation = "color-dodge";
+    ctx.strokeStyle = "rgba(255, 0, 255, 0.5)";
+
+    ctx.beginPath();
+
+    const x0 = 0;
+    const y0 = 0;
+    const x1 = width;
+    const y1 = height;
+
+    for (let x = tileSize; x < width - 1; x += tileSize) {
+      ctx.moveTo(x, y0);
+      ctx.lineTo(x, y1);
+    }
+    for (let y = tileSize; y < height; y += tileSize) {
+      ctx.moveTo(x0, y);
+      ctx.lineTo(x1, y);
+    }
+
+    ctx.stroke();
+  }
+  #generateCheckerPattern() {
     const checkerCanvas = document.createElement("canvas");
     const checkerContext = checkerCanvas.getContext("2d")!;
     const patternSize = 2;
@@ -175,6 +240,9 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#checkerPattern = this.#context.createPattern(checkerCanvas, "repeat")!;
   }
 
+  // region DOM
+  #container: HTMLElement = null!;
+  #cachedPageRect: DOMRect | null = null;
   mount(container: HTMLElement) {
     this.#container = container;
     this.#container.appendChild(this.#canvas);
@@ -186,9 +254,8 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#canvas.remove();
   }
 
-  copyToClipboard() {
-    ClipboardService.default.copyImageSource(this.tileset.imageSource);
-  }
+  // region Undo
+  readonly #undoStack: ImageData[] = [];
 
   undo = () => {
     if (this.#undoStack.length === 0) return;
@@ -197,9 +264,16 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.tileset.invalidate();
   };
 
-  #onTilesetChanged = () => {
-    this.#draw();
+  #storeUndo = () => {
+    const imageData = this.tileset.getSourceImageData();
+    this.#undoStack.push(imageData);
+    if (this.#undoStack.length > UNDO_MAX_COUNT) {
+      this.#undoStack.shift();
+    }
   };
+
+  // region Input Handlers
+  #isGesturing = false;
 
   #handleTouchStart = (startE: TouchEvent) => {
     startE.preventDefault();
@@ -260,61 +334,6 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     window.addEventListener("touchend", handleEnd);
   };
 
-  #draw() {
-    this.#context.reset();
-    this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
-    this.#transformToCanvas();
-    this.#drawArtboard();
-    this.#drawTileset();
-    this.#drawTileGuides();
-  }
-
-  #drawArtboard() {
-    this.#context.imageSmoothingEnabled = false;
-    this.#context.fillStyle = this.#checkerPattern;
-    this.#context.fillRect(0, 0, this.tileset.width, this.tileset.height);
-  }
-
-  #drawTileset() {
-    this.#context.imageSmoothingEnabled = false;
-    this.#context.drawImage(this.tileset.imageSource, 0, 0);
-  }
-
-  #drawTileGuides() {
-    const { width, height, tileSize } = this.tileset;
-    const ctx = this.#context;
-    ctx.lineWidth = 1 / this.viewZoom;
-    ctx.globalCompositeOperation = "color-dodge";
-    ctx.strokeStyle = "rgba(255, 0, 255, 0.5)";
-
-    ctx.beginPath();
-
-    const x0 = 0;
-    const y0 = 0;
-    const x1 = width;
-    const y1 = height;
-
-    for (let x = tileSize; x < width - 1; x += tileSize) {
-      ctx.moveTo(x, y0);
-      ctx.lineTo(x, y1);
-    }
-    for (let y = tileSize; y < height; y += tileSize) {
-      ctx.moveTo(x0, y);
-      ctx.lineTo(x1, y);
-    }
-
-    ctx.stroke();
-  }
-
-  #transformToCanvas() {
-    const ch = this.#canvas.height;
-    const cw = this.#canvas.width;
-    const vx = this.viewX + this.tileset.width / 2;
-    const vy = this.viewY + this.tileset.height / 2;
-    const vz = this.viewZoom;
-    this.#context.setTransform(vz, 0, 0, vz, cw / 2 - vx * vz, ch / 2 - vy * vz);
-  }
-
   #handleResize = () => {
     const docRect = document.documentElement.getBoundingClientRect();
     const containerRect = this.#container.getBoundingClientRect();
@@ -365,13 +384,16 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#draw();
   };
 
-  #storeUndo = () => {
-    const imageData = this.tileset.getSourceImageData();
-    this.#undoStack.push(imageData);
-    if (this.#undoStack.length > UNDO_MAX_COUNT) {
-      this.#undoStack.shift();
-    }
-  };
+  // region Coordinate Conversion
+
+  #transformToCanvas() {
+    const ch = this.#canvas.height;
+    const cw = this.#canvas.width;
+    const vx = this.viewX + this.tileset.width / 2;
+    const vy = this.viewY + this.tileset.height / 2;
+    const vz = this.viewZoom;
+    this.#context.setTransform(vz, 0, 0, vz, cw / 2 - vx * vz, ch / 2 - vy * vz);
+  }
 
   #canvasPointToTilesetPoint(point: PixelPoint): PixelPoint {
     const { x, y } = point;
@@ -397,5 +419,11 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   #getTilesetPixelFromEvent(event: PointerEvent): PixelPoint {
     const canvasPoint = this.#getCanvasPixelFromEvent(event);
     return this.#canvasPointToTilesetPoint(canvasPoint);
+  }
+
+  // region Misc
+
+  copyToClipboard() {
+    ClipboardService.default.copyImageSource(this.tileset.imageSource);
   }
 }

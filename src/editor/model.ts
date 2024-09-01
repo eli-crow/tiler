@@ -42,6 +42,9 @@ export type JigsawTileGrid = Tile[][];
 export type TilesetChangedCallback = () => void;
 
 export type RGBA = [r: number, g: number, b: number, a: number];
+export function colorsMatch(a: RGBA, b: RGBA): boolean {
+  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+}
 
 export type TilesetEditorTool = PencilTool | JigsawTileTool;
 
