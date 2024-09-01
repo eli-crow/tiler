@@ -23,6 +23,9 @@ export function TilesetEditorPage({ backAction, documentId }: TilesetEditorPageC
     if (typeof documentId === "string") {
       context.loadTilesetDocument(documentId);
     }
+    if (documentId === createNewSymbol) {
+      context.initExampleTilesetDocument();
+    }
   }, []);
 
   return (

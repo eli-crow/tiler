@@ -41,15 +41,17 @@
 
 .mode {
   padding: 8px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   cursor: pointer;
   border: 0;
   background: transparent;
-  color: var(--text-inactive);
   font: inherit;
   font-weight: 500;
+  color: var(--text);
 }
 .mode:is(:hover, [aria-current="true"]) {
-  background-color: var(--color-primary);
-  color: white;
+  background-color: var(--bg-surface-active);
+}
+.mode:not(:hover, [aria-current="true"]) {
+  color: var(--text-inactive);
 }

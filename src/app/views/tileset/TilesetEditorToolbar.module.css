@@ -22,6 +22,7 @@
   border: 0;
   background-color: transparent;
   border-radius: var(--radius-md);
+  color: var(--text);
 }
 .tool:not(:hover, [data-active="true"]) {
   color: var(--icon-inactive);

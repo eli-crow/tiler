@@ -28,8 +28,6 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
   readonly once: EventEmitter<Events>["once"] = this.#emitter.once.bind(this.#emitter);
   readonly off: EventEmitter<Events>["off"] = this.#emitter.off.bind(this.#emitter);
   protected readonly emit: EventEmitter<Events>["emit"] = this.#emitter.emit.bind(this.#emitter);
-  #resolveLoaded!: () => void;
-  readonly loaded: Promise<void>;
 
   get width() {
     return this.#canvas.width;
@@ -52,23 +50,6 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
 
     this.context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true, antialias: false })!;
     this.context.imageSmoothingEnabled = false;
-
-    this.loaded = new Promise((resolve) => {
-      this.#resolveLoaded = resolve;
-    });
-
-    this.load().then(() => this.#onLoaded());
-  }
-
-  protected async load() {
-    if (isProxyTileset(this)) {
-      await this.sourceTileset.loaded;
-    }
-  }
-
-  async #onLoaded() {
-    this.invalidate();
-    this.#resolveLoaded();
   }
 
   tilePositionInRange(x: number, y: number): boolean {
@@ -91,7 +72,7 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     this.setPixel(x, y, color);
   }
 
-  setFromImageUrlAsync(url: string) {
+  setSourceDataFromImageUrlAsync(url: string) {
     return new Promise<void>((resolve) => {
       const image = new Image();
       image.onload = () => {
@@ -131,6 +112,9 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
   }
 
   invalidate() {
+    if (isProxyTileset(this)) {
+      this.sourceTileset.invalidate();
+    }
     this.#emitter.emit("dataChanged");
   }
 

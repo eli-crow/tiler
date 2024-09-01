@@ -1,5 +1,5 @@
 import { ExtendHTMLProps, mergeClasses } from "@/shared";
-import { ChangeEventHandler, FocusEventHandler, useState } from "react";
+import { ChangeEventHandler, FocusEventHandler, useEffect, useState } from "react";
 import classes from "./EditableText.module.css";
 
 type EditableTextProps = ExtendHTMLProps<{
@@ -10,11 +10,16 @@ type EditableTextProps = ExtendHTMLProps<{
 
 function EditableText({ value, onChange, tag: Tag = "p", className, ...otherProps }: EditableTextProps) {
   const [editing, setEditing] = useState(false);
+  const [internalValue, setInternalValue] = useState(value);
+
+  useEffect(() => {
+    if (!internalValue && value) {
+      setInternalValue(value);
+    }
+  }, [value]);
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    if (onChange) {
-      onChange(e.target.value);
-    }
+    setInternalValue(e.target.value);
   };
 
   const handleFocus: FocusEventHandler<HTMLInputElement> = (e) => {
@@ -24,10 +29,22 @@ function EditableText({ value, onChange, tag: Tag = "p", className, ...otherProp
 
   const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
     setEditing(false);
+    if (onChange && internalValue !== value) {
+      onChange(internalValue);
+    }
   };
+
+  const handleRootClick = (e: React.MouseEvent) => {
+    if (!(e.target instanceof HTMLInputElement)) {
+      e.currentTarget.querySelector("input")?.focus();
+    }
+  };
+
+  const displayValue = internalValue.replace(/ /g, "\u00a0") || "\u00a0";
 
   return (
     <div
+      onClickCapture={handleRootClick}
       className={mergeClasses(classes.root, className)}
       {...otherProps}
       data-editing={editing}
@@ -37,12 +54,12 @@ function EditableText({ value, onChange, tag: Tag = "p", className, ...otherProp
         onClick={(e) => console.log("click input")}
         className={classes.input}
         type="text"
-        value={value}
+        value={internalValue}
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
       />
-      <Tag className={classes.text}>{value}</Tag>
+      <Tag className={classes.text}>{displayValue}</Tag>
     </div>
   );
 }

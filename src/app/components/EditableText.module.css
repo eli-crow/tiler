@@ -48,6 +48,5 @@
   height: calc(100% - var(--outset) * 2);
   appearance: none;
   min-width: 0;
-  width: min-content;
   border: 0;
 }
