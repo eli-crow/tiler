@@ -7,9 +7,9 @@ import {
   type TerrainTileGrid,
   type TileNeighborGrid,
   type TilePosition,
-} from "../model";
-import { SupportsPencilTool } from "../tools/PencilTool";
-import { SupportsTerrainTileTool } from "../tools/TerrainTileTool";
+} from "@/editor/model";
+import { SupportsPencilTool } from "@/editor/tools/PencilTool";
+import { SupportsTerrainTileTool } from "@/editor/tools/TerrainTileTool";
 import { BaseTileset, ProxyTileset } from "./BaseTileset";
 import type { Tileset4x4PlusJigsaw } from "./Tileset4x4PlusJigsaw";
 

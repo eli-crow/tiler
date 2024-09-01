@@ -1,7 +1,7 @@
+import { useTileset } from "@/app/providers/TilesetEditorPageProvider";
+import { RGBA } from "@/editor";
 import debounce from "debounce";
 import { useEffect, useState } from "react";
-import { RGBA } from "../../editor/model";
-import { useTileset } from "../providers/TilesetEditorPageProvider";
 import { Swatch } from "./Swatch";
 import classes from "./SwatchCollectionEditor.module.css";
 

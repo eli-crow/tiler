@@ -1,4 +1,4 @@
-import { TilesetEditorPageProvider, useTilesetEditorPageState } from "../providers/TilesetEditorPageProvider";
+import { TilesetEditorPageProvider, useTilesetEditorPageState } from "@/app/providers/TilesetEditorPageProvider";
 import classes from "./TilesetEditorPage.module.css";
 import { TilesetEditorToolbar } from "./TilesetEditorToolbar";
 import { TilesetEditorToolSettings } from "./TilesetEditorToolSettings";

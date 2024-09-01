@@ -1,9 +1,9 @@
-import { SizedImageSource } from "../../shared/ClipboardService";
-import { EventEmitter } from "../events/EventEmitter";
-import type { RGBA, Tile, TilePosition } from "../model";
-import { SupportsFillTool } from "../tools/FillTool";
-import { SupportsPencilTool } from "../tools/PencilTool";
-import { Tool } from "../tools/Tool";
+import { EventEmitter } from "@/editor/events/EventEmitter";
+import type { RGBA, Tile, TilePosition } from "@/editor/model";
+import { SupportsFillTool } from "@/editor/tools/FillTool";
+import { SupportsPencilTool } from "@/editor/tools/PencilTool";
+import { Tool } from "@/editor/tools/Tool";
+import { SizedImageSource } from "@/shared/ClipboardService";
 
 interface Events {
   dataChanged(): void;

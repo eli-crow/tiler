@@ -1,7 +1,7 @@
-import { mergeClasses } from "../../shared";
-import { ColorPicker } from "../components/ColorPicker";
-import { SwatchCollectionEditor } from "../components/SwatchCollectionEditor";
-import { useTilesetEditorPageContext } from "../providers/TilesetEditorPageProvider";
+import { ColorPicker } from "@/app/components/ColorPicker";
+import { SwatchCollectionEditor } from "@/app/components/SwatchCollectionEditor";
+import { useTilesetEditorPageContext } from "@/app/providers/TilesetEditorPageProvider";
+import { mergeClasses } from "@/shared";
 import classes from "./TilesetEditorToolSettings.module.css";
 
 export function TilesetEditorToolSettings() {

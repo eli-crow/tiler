@@ -1,5 +1,5 @@
+import { ClipboardService } from "@/shared/ClipboardService";
 import { CSSProperties } from "react";
-import { ClipboardService } from "../shared/ClipboardService";
 import { EventEmitter } from "./events/EventEmitter";
 import { PixelPoint, RGBA } from "./model";
 import { BaseTileset } from "./tileset/BaseTileset";

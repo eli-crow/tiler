@@ -1,6 +1,6 @@
-import { mergeClasses } from "../../shared";
-import { ToolIcon } from "../components/ToolIcon";
-import { useTilesetEditorPageContext } from "../providers/TilesetEditorPageProvider";
+import { ToolIcon } from "@/app/components/ToolIcon";
+import { useTilesetEditorPageContext } from "@/app/providers/TilesetEditorPageProvider";
+import { mergeClasses } from "@/shared";
 import classes from "./TilesetEditorToolbar.module.css";
 
 export function TilesetEditorToolbar() {

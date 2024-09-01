@@ -1,5 +1,5 @@
+import { RGBA } from "@/editor/model";
 import { RgbaColor, RgbaColorPicker } from "react-colorful";
-import { RGBA } from "../../editor/model";
 
 export interface ColorPickerProps {
   color: RGBA;

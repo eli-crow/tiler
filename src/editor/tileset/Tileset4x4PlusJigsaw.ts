@@ -1,7 +1,6 @@
-import type { JigsawTileGrid, RGBA, Tile, TileInnerCorner } from "../model";
-import { tilesMatch } from "../model";
-import { SupportsJigsawTileTool } from "../tools/JigsawTileTool";
-import { SupportsPencilTool } from "../tools/PencilTool";
+import { tilesMatch, type JigsawTileGrid, type RGBA, type Tile, type TileInnerCorner } from "@/editor/model";
+import { SupportsJigsawTileTool } from "@/editor/tools/JigsawTileTool";
+import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { BaseTileset, ProxyTileset } from "./BaseTileset";
 import type { Tileset4x4Plus } from "./Tileset4x4Plus";
 

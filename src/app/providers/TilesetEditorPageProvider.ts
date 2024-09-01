@@ -1,15 +1,20 @@
+import {
+  BaseTileset,
+  EXAMPLE_TERRAIN_TILES,
+  FillTool,
+  GODOT_NEIGHBORS,
+  GODOT_TILES,
+  JigsawTileTool,
+  PencilTool,
+  RGBA,
+  TerrainTileTool,
+  Tileset4x4Plus,
+  Tileset4x4PlusJigsaw,
+  Tileset4x4PlusTerrain,
+  TilesetEditor,
+  Tool,
+} from "@/editor";
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { EXAMPLE_TERRAIN_TILES, GODOT_NEIGHBORS, GODOT_TILES, RGBA } from "../../editor/model";
-import { BaseTileset } from "../../editor/tileset/BaseTileset";
-import { Tileset4x4Plus } from "../../editor/tileset/Tileset4x4Plus";
-import { Tileset4x4PlusJigsaw } from "../../editor/tileset/Tileset4x4PlusJigsaw";
-import { Tileset4x4PlusTerrain } from "../../editor/tileset/Tileset4x4PlusTerrain";
-import { TilesetEditor } from "../../editor/TilesetEditor";
-import { FillTool } from "../../editor/tools/FillTool";
-import { JigsawTileTool } from "../../editor/tools/JigsawTileTool";
-import { PencilTool } from "../../editor/tools/PencilTool";
-import { TerrainTileTool } from "../../editor/tools/TerrainTileTool";
-import { Tool } from "../../editor/tools/Tool";
 
 const context = createContext<TilesetEditorPageContext>(null as never);
 export const TilesetEditorPageProvider = context.Provider;

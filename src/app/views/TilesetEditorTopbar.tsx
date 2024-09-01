@@ -1,6 +1,6 @@
-import { mergeClasses } from "../../shared";
-import BackIcon from "../icons/back.svg?react";
-import { useTilesetEditorPageContext } from "../providers/TilesetEditorPageProvider";
+import BackIcon from "@/app/icons/back.svg?react";
+import { useTilesetEditorPageContext } from "@/app/providers/TilesetEditorPageProvider";
+import { mergeClasses } from "@/shared";
 import classes from "./TilesetEditorTopbar.module.css";
 
 export function TilesetEditorTopbar() {
