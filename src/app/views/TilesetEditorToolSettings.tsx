@@ -1,4 +1,4 @@
-import { mergeClasses } from "../../utilities";
+import { mergeClasses } from "../../shared";
 import { ColorPicker } from "../components/ColorPicker";
 import { SwatchCollectionEditor } from "../components/SwatchCollectionEditor";
 import { useTilesetEditorPageContext } from "../providers/TilesetEditorPageProvider";

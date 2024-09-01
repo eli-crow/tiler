@@ -1,5 +1,5 @@
 import { RGBA } from "../../editor/model";
-import { RGBAToCSS } from "../../utilities";
+import { RGBAToCSS } from "../../shared";
 import classes from "./Swatch.module.css";
 
 interface SwatchProps {

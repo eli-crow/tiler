@@ -1,4 +1,4 @@
-import { mergeClasses } from "../../utilities";
+import { mergeClasses } from "../../shared";
 import { ToolIcon } from "../components/ToolIcon";
 import { useTilesetEditorPageContext } from "../providers/TilesetEditorPageProvider";
 import classes from "./TilesetEditorToolbar.module.css";

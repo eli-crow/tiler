@@ -1,4 +1,4 @@
-import { SizedImageSource } from "../../ui/services/ClipboardService";
+import { SizedImageSource } from "../../shared/ClipboardService";
 import { EventEmitter } from "../events/EventEmitter";
 import type { RGBA, Tile, TilePosition } from "../model";
 import { SupportsFillTool } from "../tools/FillTool";

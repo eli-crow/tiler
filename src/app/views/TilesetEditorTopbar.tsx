@@ -1,4 +1,4 @@
-import { mergeClasses } from "../../utilities";
+import { mergeClasses } from "../../shared";
 import BackIcon from "../icons/back.svg?react";
 import { useTilesetEditorPageContext } from "../providers/TilesetEditorPageProvider";
 import classes from "./TilesetEditorTopbar.module.css";
