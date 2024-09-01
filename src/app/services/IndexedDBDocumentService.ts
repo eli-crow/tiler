@@ -1,5 +1,6 @@
-import { deserializeTilesetDocument, serializeTilesetDocument, TilesetDocument, TilesetDocumentInfo } from "../model";
-import { IDocumentService } from "./IDocumentService";
+import { EventEmitter } from "@/editor";
+import { deserializeTilesetDocument, serializeTilesetDocument, TilesetDocument } from "../model";
+import { IDocumentService, IDocumentServiceEvents } from "./IDocumentService";
 
 const DB_NAME = "tiler";
 const DB_STORE_NAME = "documents";
@@ -10,6 +11,12 @@ export class IndexedDBDocumentService implements IDocumentService {
   readonly #dbName: string;
   readonly #storeName: string;
   #db!: IDBDatabase;
+
+  readonly #emitter = new EventEmitter<IDocumentServiceEvents>();
+  readonly on = this.#emitter.on.bind(this.#emitter);
+  readonly once = this.#emitter.once.bind(this.#emitter);
+  readonly off = this.#emitter.off.bind(this.#emitter);
+  readonly #emit = this.#emitter.emit.bind(this.#emitter);
 
   readonly #ready = this.init();
 
@@ -40,16 +47,24 @@ export class IndexedDBDocumentService implements IDocumentService {
 
   async saveTilesetDocument<T extends TilesetDocument = TilesetDocument>(tileset: T): Promise<void> {
     await this.#ready;
-    return await this.writeFile(tileset.id, serializeTilesetDocument(tileset));
+    const file = await this.#writeFile(tileset.id, serializeTilesetDocument(tileset));
+    this.#emit("changed");
+    return file;
   }
 
   async loadTilesetDocument<T extends TilesetDocument = TilesetDocument>(id: T["id"]): Promise<T> {
     await this.#ready;
-    const json = await this.readFile(id);
+    const json = await this.#readFile(id);
     return deserializeTilesetDocument<T>(json);
   }
 
-  async getTilesetDocumentInfo(): Promise<TilesetDocumentInfo[]> {
+  async deleteTilesetDocument<T extends TilesetDocument = TilesetDocument>(id: T["id"]): Promise<void> {
+    await this.#ready;
+    await this.#deleteFile(id);
+    this.#emit("changed");
+  }
+
+  async getAllDocuments(): Promise<TilesetDocument[]> {
     await this.#ready;
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(this.#storeName, "readonly");
@@ -57,14 +72,8 @@ export class IndexedDBDocumentService implements IDocumentService {
       const request = objectStore.getAll();
 
       request.onsuccess = () => {
-        const documents = request.result as string[];
-        const infos = documents.map((json) => {
-          const document = JSON.parse(json) as TilesetDocument;
-          return {
-            id: document.id,
-            name: document.name,
-          };
-        });
+        const documentsJSON = request.result as string[];
+        const infos = documentsJSON.map((json) => deserializeTilesetDocument(json));
         resolve(infos);
       };
 
@@ -74,7 +83,7 @@ export class IndexedDBDocumentService implements IDocumentService {
     });
   }
 
-  async writeFile(key: string, data: string): Promise<void> {
+  async #writeFile(key: string, data: string): Promise<void> {
     await this.#ready;
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(this.#storeName, "readwrite");
@@ -91,7 +100,7 @@ export class IndexedDBDocumentService implements IDocumentService {
     });
   }
 
-  async readFile(key: string): Promise<string> {
+  async #readFile(key: string): Promise<string> {
     await this.#ready;
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(this.#storeName, "readonly");
@@ -113,7 +122,7 @@ export class IndexedDBDocumentService implements IDocumentService {
     });
   }
 
-  async deleteFile(key: string): Promise<void> {
+  async #deleteFile(key: string): Promise<void> {
     await this.#ready;
     return new Promise((resolve, reject) => {
       const transaction = this.#db.transaction(this.#storeName, "readwrite");

@@ -1,10 +1,6 @@
-import {
-  deserializeTilesetDocument,
-  serializeTilesetDocument,
-  TilesetDocument,
-  TilesetDocumentInfo,
-} from "@/app/model";
-import { IDocumentService } from "./IDocumentService";
+import { deserializeTilesetDocument, serializeTilesetDocument, TilesetDocument } from "@/app/model";
+import { EventEmitter } from "@/editor";
+import { IDocumentService, IDocumentServiceEvents } from "./IDocumentService";
 
 const TILESET_DOCUMENT_TYPE: FilePickerAcceptType = {
   description: "Tileset Document",
@@ -15,6 +11,12 @@ const TILESET_DOCUMENT_TYPE: FilePickerAcceptType = {
 
 export class FilesystemDocumentService implements IDocumentService {
   static readonly instance = new FilesystemDocumentService();
+
+  readonly #emitter = new EventEmitter<IDocumentServiceEvents>();
+  readonly on = this.#emitter.on.bind(this.#emitter);
+  readonly once = this.#emitter.once.bind(this.#emitter);
+  readonly off = this.#emitter.off.bind(this.#emitter);
+  readonly #emit = this.#emitter.emit.bind(this.#emitter);
 
   readonly ready = this.init();
 
@@ -30,13 +32,18 @@ export class FilesystemDocumentService implements IDocumentService {
     const writable = await fileHandle.createWritable();
     await writable.write(serialized);
     await writable.close();
+    this.#emit("changed");
   }
 
   async loadTilesetDocument<T extends TilesetDocument>(_id: T["id"]): Promise<T> {
     throw new Error("Method not implemented.");
   }
 
-  async getTilesetDocumentInfo(): Promise<TilesetDocumentInfo[]> {
+  async deleteTilesetDocument<T extends TilesetDocument>(_id: T["id"]): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
+  async getAllDocuments(): Promise<TilesetDocument[]> {
     throw new Error("Method not implemented.");
   }
 

@@ -50,8 +50,6 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
 
     this.context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true, antialias: false })!;
     this.context.imageSmoothingEnabled = false;
-
-    console.log("BaseTileset constructor");
   }
 
   tilePositionInRange(x: number, y: number): boolean {

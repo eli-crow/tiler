@@ -48,10 +48,8 @@ function EditableText({ value, onChange, tag: Tag = "p", className, ...otherProp
       className={mergeClasses(classes.root, className)}
       {...otherProps}
       data-editing={editing}
-      onClick={() => console.log("click root")}
     >
       <input
-        onClick={(e) => console.log("click input")}
         className={classes.input}
         type="text"
         value={internalValue}

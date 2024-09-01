@@ -12,11 +12,6 @@ export type TilesetDocument = Document & {
   imageData: ImageData;
 };
 
-export type TilesetDocumentInfo = {
-  id: TilesetDocument["id"];
-  name: TilesetDocument["name"];
-};
-
 export type SerializedImageData = {
   colorSpace: ImageData["colorSpace"];
   width: ImageData["width"];
@@ -39,7 +34,21 @@ export function imageDataFromSerialized(serialized: SerializedImageData): ImageD
   return imageData;
 }
 
-export type SerializedTilesetDocument<T extends TilesetDocument> = Omit<T, "imageData"> & {
+const __previewCanvas = document.createElement("canvas");
+const __previewContext = __previewCanvas.getContext("2d", { alpha: true })!;
+
+export function imageURLFromImageData(imageData: ImageData): string {
+  __previewCanvas.width = imageData.width;
+  __previewCanvas.height = imageData.height;
+  __previewContext.putImageData(imageData, 0, 0);
+  return __previewCanvas.toDataURL();
+}
+
+export function imageURLFromSerializedImageData(serialized: SerializedImageData): string {
+  return imageURLFromImageData(imageDataFromSerialized(serialized));
+}
+
+export type SerializedTilesetDocument<T extends TilesetDocument = TilesetDocument> = Omit<T, "imageData"> & {
   imageData: SerializedImageData;
 };
 

@@ -1,4 +1,12 @@
-export class EventEmitter<TEvents extends { [Key in keyof TEvents]: (...args: any) => void }> {
+export interface IEventEmitter<TEvents extends { [Key in keyof TEvents]: (...args: any) => void }> {
+  on<T extends keyof TEvents>(event: T, listener: TEvents[T]): void;
+  once<T extends keyof TEvents>(event: T, listener: TEvents[T]): void;
+  off<T extends keyof TEvents>(event: T, listener: TEvents[T]): void;
+}
+
+export class EventEmitter<TEvents extends { [Key in keyof TEvents]: (...args: any) => void }>
+  implements IEventEmitter<TEvents>
+{
   #listeners: { [K in keyof TEvents]?: Set<TEvents[K]> } = {};
 
   on<T extends keyof TEvents>(event: T, listener: TEvents[T]) {
