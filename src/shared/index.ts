@@ -1,4 +1,5 @@
 import { RGBA } from "@/editor/model";
+import { HTMLProps } from "react";
 
 export function RGBAToCSS(rgba: RGBA): string {
   const [r, g, b, a] = rgba;
@@ -8,3 +9,9 @@ export function RGBAToCSS(rgba: RGBA): string {
 export function mergeClasses(...classes: (string | undefined | null)[]): string {
   return classes.filter(Boolean).join(" ");
 }
+
+export type ExtendHTMLProps<Props extends object, Element extends HTMLElement = HTMLDivElement> = Omit<
+  HTMLProps<Element>,
+  keyof Props
+> &
+  Props;

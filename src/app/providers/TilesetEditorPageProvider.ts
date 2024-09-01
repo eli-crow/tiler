@@ -1,3 +1,4 @@
+import { createTilesetDocument4x4Plus, TilesetDocument } from "@/app/model";
 import {
   BaseTileset,
   EXAMPLE_TERRAIN_TILES,
@@ -15,6 +16,7 @@ import {
   Tool,
 } from "@/editor";
 import { createContext, useContext, useEffect, useReducer, useState } from "react";
+import { FilesystemService } from "../services/FilesystemService";
 
 const context = createContext<TilesetEditorPageContext>(null as never);
 export const TilesetEditorPageProvider = context.Provider;
@@ -36,6 +38,9 @@ export type TilesetEditorPageContext = {
   setTool: (tool: Tool) => void;
   color: RGBA;
   setColor: (color: RGBA) => void;
+  saveTilesetDocument: () => Promise<void>;
+  loadTilesetDocument: () => Promise<void>;
+  setTilesetName: (name: string) => void;
 };
 
 const pencilTool = new PencilTool();
@@ -65,7 +70,7 @@ function getDefaultToolForTileset<T extends BaseTileset>(tileset: T) {
 }
 
 export function useTilesetEditorPageState(): TilesetEditorPageContext {
-  const [tilesetName, _setTilesetName] = useState("4x4Plus Example");
+  const [doc, setDoc] = useState<TilesetDocument>(createTilesetDocument4x4Plus());
   const [mode, setMode] = useState<TilesetEditorPageMode>("raw");
   const [color, setColor] = useState<RGBA>([255, 255, 255, 255]);
 
@@ -90,7 +95,41 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
     setTool(getDefaultToolForTileset(tileset));
   }
 
-  return { mode, setMode, tool, setTool, color, setColor, tileset, editor, tilesetName, supportedTools };
+  async function saveTilesetDocument() {
+    const newDoc = {
+      ...doc,
+      imageData: tileset.getSourceImageData(),
+    };
+    setDoc(newDoc);
+    await FilesystemService.instance.saveTilesetDocument(newDoc);
+  }
+
+  async function loadTilesetDocument() {
+    const newDoc = await FilesystemService.instance.openTilesetDocument();
+    setDoc(newDoc);
+    tileset.putSourceImageData(newDoc.imageData);
+    tileset.invalidate();
+  }
+
+  function setTilesetName(name: string) {
+    setDoc({ ...doc, name });
+  }
+
+  return {
+    mode,
+    setMode,
+    tool,
+    setTool,
+    color,
+    setColor,
+    tileset,
+    editor,
+    tilesetName: doc.name,
+    saveTilesetDocument,
+    loadTilesetDocument,
+    setTilesetName,
+    supportedTools,
+  };
 }
 
 export function useTileset() {
