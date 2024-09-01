@@ -15,7 +15,7 @@ import {
   TOOLS,
 } from "@/editor";
 import sample4x4Plus from "@/editor/tileset/examples/sample4x4Plus.png";
-import { createContext, useContext, useEffect, useReducer, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { IDocumentService } from "../services/IDocumentService";
 import { IndexedDBDocumentService } from "../services/IndexedDBDocumentService";
 
@@ -52,22 +52,24 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const [mode, setMode] = useState<TilesetEditorPageMode>("raw");
   const [color, setColor] = useState<RGBA>([255, 255, 255, 255]);
 
-  const tileset4x4PlusRef = useRef(new Tileset4x4Plus());
-  const tileset4x4PlusJigsawRef = useRef(new Tileset4x4PlusJigsaw(tileset4x4PlusRef.current, GODOT_TILES));
-  const tileset4x4PlusTerrainRef = useRef(
-    new Tileset4x4PlusTerrain(tileset4x4PlusJigsawRef.current, GODOT_NEIGHBORS, EXAMPLE_TERRAIN_TILES)
+  const tileset4x4Plus = useMemo(() => new Tileset4x4Plus(), []);
+  const tileset4x4PlusJigsaw = useMemo(() => new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES), [tileset4x4Plus]);
+  const tileset4x4PlusTerrain = useMemo(
+    () => new Tileset4x4PlusTerrain(tileset4x4PlusJigsaw, GODOT_NEIGHBORS, EXAMPLE_TERRAIN_TILES),
+    [tileset4x4PlusJigsaw]
   );
-  const editorRef = useRef<TilesetEditor<BaseTileset>>(
-    new TilesetEditor(tileset4x4PlusRef.current, TOOL_INSTANCES.pencil)
+  const editor = useMemo<TilesetEditor<BaseTileset>>(
+    () => new TilesetEditor(tileset4x4Plus, TOOL_INSTANCES.pencil),
+    [tileset4x4Plus]
   );
 
   let tileset: BaseTileset;
   if (mode === "raw") {
-    tileset = tileset4x4PlusRef.current;
+    tileset = tileset4x4Plus;
   } else if (mode === "jigsaw") {
-    tileset = tileset4x4PlusJigsawRef.current;
+    tileset = tileset4x4PlusJigsaw;
   } else if (mode === "terrain") {
-    tileset = tileset4x4PlusTerrainRef.current;
+    tileset = tileset4x4PlusTerrain;
   } else {
     throw new Error(`Invalid editor mode: ${mode}`);
   }
@@ -75,9 +77,9 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const [tool, setTool] = useState<Tool>(getDefaultToolForTileset(tileset));
   const supportedTools = TOOLS.filter((t) => t.supportsTileset(tileset));
 
-  editorRef.current.tool = tool;
-  editorRef.current.color = color;
-  editorRef.current.tileset = tileset;
+  editor.tool = tool;
+  editor.color = color;
+  editor.tileset = tileset;
   if (!tileset.supportsTool(tool)) {
     setTool(getDefaultToolForTileset(tileset));
   }
@@ -123,7 +125,7 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
     color,
     setColor,
     tileset,
-    editor: editorRef.current,
+    editor,
     tilesetName: doc?.name ?? "",
     saveTilesetDocument,
     loadTilesetDocument,
