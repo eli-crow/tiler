@@ -13,7 +13,7 @@ export interface ProxyTileset {
   sourceTileset: BaseTileset;
 }
 
-function isProxyTileset(tileset: any): tileset is ProxyTileset {
+export function isProxyTileset(tileset: any): tileset is ProxyTileset {
   return tileset instanceof BaseTileset && "sourceTileset" in tileset;
 }
 

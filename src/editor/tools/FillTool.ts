@@ -1,5 +1,5 @@
 import { RGBA } from "../model";
-import { BaseTileset } from "../tileset/BaseTileset";
+import { BaseTileset, isProxyTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
 export type SupportsFillTool = {
@@ -8,7 +8,7 @@ export type SupportsFillTool = {
 };
 
 function isSupportsFillTool(value: any): value is SupportsFillTool {
-  return typeof value.setPixel === "function";
+  return typeof value.setPixel === "function" && !isProxyTileset(value);
 }
 
 export class FillTool extends Tool<SupportsFillTool> {
