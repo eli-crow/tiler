@@ -13,8 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
 
   --bg: hsl(210, 5%, 10%);
+  --bg-hover: hsl(210, 5%, 14%);
+  --bg-active: hsl(210, 5%, 18%);
   --bg-translucent: hsla(210, 5%, 10%, 0.5);
+
   --bg-surface: hsl(201, 5%, 14%);
+  --bg-surface-hover: hsl(201, 5%, 16%);
   --bg-surface-active: hsl(201, 5%, 18%);
 
   --text: #bebec2;

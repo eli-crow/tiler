@@ -9,12 +9,15 @@
   border-radius: var(--radius-md);
   color: var(--text);
 }
+
 .root:not(:hover, [data-active="true"], [aria-active="true"], [aria-checked="true"]) {
   color: var(--icon-inactive);
 }
+
 .root:hover {
-  background-color: var(--bg-surface-active);
+  background-color: var(--bg-hover);
 }
+
 .root:is([data-active="true"], [aria-active="true"], [aria-checked="true"]) {
-  background-color: var(--bg-surface-active);
+  background-color: var(--bg-active);
 }

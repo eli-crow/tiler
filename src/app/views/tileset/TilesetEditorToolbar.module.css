@@ -28,8 +28,8 @@
   color: var(--icon-inactive);
 }
 .tool:hover {
-  background-color: var(--bg-surface-active);
+  background-color: var(--bg-hover);
 }
 .tool[data-active="true"] {
-  background-color: var(--bg-surface-active);
+  background-color: var(--bg-active);
 }

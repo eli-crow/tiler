@@ -31,7 +31,7 @@
   color: var(--icon-inactive);
 }
 .back:hover {
-  background-color: var(--bg-surface-active);
+  background-color: var(--bg-active);
 }
 
 .modeGroup {
@@ -49,8 +49,11 @@
   font-weight: 500;
   color: var(--text);
 }
-.mode:is(:hover, [aria-current="true"], [aria-checked="true"]) {
-  background-color: var(--bg-surface-active);
+.mode:is(:hover) {
+  background-color: var(--bg-hover);
+}
+.mode:is([aria-current="true"], [aria-checked="true"]) {
+  background-color: var(--bg-active);
 }
 .mode:not(:hover, [aria-current="true"], [aria-checked="true"]) {
   color: var(--text-inactive);
