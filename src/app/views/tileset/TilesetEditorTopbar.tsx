@@ -18,13 +18,13 @@ export function TilesetEditorTopbar({ backAction }: TilesetEditorTopbarProps) {
       <EditableText tag="h1" value={page.tilesetName} onChange={page.setTilesetName} className={classes.title} />
       <div className={classes.modeGroup}>
         <button className={classes.mode} aria-current={page.mode === "raw"} onClick={() => page.setMode("raw")}>
-          Raw
+          Tileset
         </button>
         <button className={classes.mode} aria-current={page.mode === "jigsaw"} onClick={() => page.setMode("jigsaw")}>
-          Jigsaw
+          Combos
         </button>
         <button className={classes.mode} aria-current={page.mode === "terrain"} onClick={() => page.setMode("terrain")}>
-          Terrain
+          Playground
         </button>
         <button onClick={() => page.saveTilesetDocument()}>Save</button>
       </div>
