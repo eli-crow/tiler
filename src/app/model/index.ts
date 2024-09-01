@@ -1,3 +1,5 @@
+import { v4 as uuid } from "uuid";
+
 type Document = {
   version: number;
   type: "tileset";
@@ -5,8 +7,14 @@ type Document = {
 };
 
 export type TilesetDocument = Document & {
+  id: string;
   type: "tileset";
   imageData: ImageData;
+};
+
+export type TilesetDocumentInfo = {
+  id: TilesetDocument["id"];
+  name: TilesetDocument["name"];
 };
 
 export type SerializedImageData = {
@@ -42,6 +50,7 @@ export type Tileset4x4PlusDocument = TilesetDocument & {
 
 export function createTilesetDocument4x4Plus(): Tileset4x4PlusDocument {
   return {
+    id: uuid(),
     version: 1,
     type: "tileset",
     name: "Untitled Tileset",

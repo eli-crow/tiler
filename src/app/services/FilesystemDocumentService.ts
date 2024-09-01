@@ -1,4 +1,10 @@
-import { deserializeTilesetDocument, serializeTilesetDocument, TilesetDocument } from "@/app/model";
+import {
+  deserializeTilesetDocument,
+  serializeTilesetDocument,
+  TilesetDocument,
+  TilesetDocumentInfo,
+} from "@/app/model";
+import { IDocumentService } from "./IDocumentService";
 
 const TILESET_DOCUMENT_TYPE: FilePickerAcceptType = {
   description: "Tileset Document",
@@ -7,8 +13,14 @@ const TILESET_DOCUMENT_TYPE: FilePickerAcceptType = {
   },
 };
 
-export class FilesystemService {
-  static readonly instance = new FilesystemService();
+export class FilesystemDocumentService implements IDocumentService {
+  static readonly instance = new FilesystemDocumentService();
+
+  readonly ready = this.init();
+
+  init(): Promise<void> {
+    return Promise.resolve();
+  }
 
   async saveTilesetDocument<T extends TilesetDocument>(tileset: T) {
     const serialized = serializeTilesetDocument(tileset);
@@ -18,6 +30,14 @@ export class FilesystemService {
     const writable = await fileHandle.createWritable();
     await writable.write(serialized);
     await writable.close();
+  }
+
+  async loadTilesetDocument<T extends TilesetDocument>(_id: T["id"]): Promise<T> {
+    throw new Error("Method not implemented.");
+  }
+
+  async getTilesetDocumentInfo(): Promise<TilesetDocumentInfo[]> {
+    throw new Error("Method not implemented.");
   }
 
   async openTilesetDocument(): Promise<TilesetDocument> {

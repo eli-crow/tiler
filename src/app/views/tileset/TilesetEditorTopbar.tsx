@@ -1,15 +1,20 @@
+import EditableText from "@/app/components/EditableText";
+import BackIcon from "@/app/icons/back.svg?react";
 import { useTilesetEditorPageContext } from "@/app/providers/TilesetEditorPageProvider";
 import { mergeClasses } from "@/shared";
-import EditableText from "../components/EditableText";
 import classes from "./TilesetEditorTopbar.module.css";
 
-export function TilesetEditorTopbar() {
+interface TilesetEditorTopbarProps {
+  backAction?: () => void;
+}
+
+export function TilesetEditorTopbar({ backAction }: TilesetEditorTopbarProps) {
   const page = useTilesetEditorPageContext();
   return (
     <div className={mergeClasses(classes.root, "surface-translucent")}>
-      {/* <button className={classes.back}>
+      <button className={classes.back} onClick={backAction}>
         <BackIcon />
-      </button> */}
+      </button>
       <EditableText tag="h1" value={page.tilesetName} onChange={page.setTilesetName} className={classes.title} />
       <div className={classes.modeGroup}>
         <button className={classes.mode} aria-current={page.mode === "raw"} onClick={() => page.setMode("raw")}>
@@ -22,7 +27,6 @@ export function TilesetEditorTopbar() {
           Terrain
         </button>
         <button onClick={() => page.saveTilesetDocument()}>Save</button>
-        <button onClick={() => page.loadTilesetDocument()}>Load</button>
       </div>
     </div>
   );

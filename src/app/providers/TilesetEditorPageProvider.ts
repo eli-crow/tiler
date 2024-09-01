@@ -15,8 +15,11 @@ import {
   TilesetEditor,
   Tool,
 } from "@/editor";
-import { createContext, useContext, useEffect, useReducer, useState } from "react";
-import { FilesystemService } from "../services/FilesystemService";
+import { createContext, useContext, useEffect, useReducer, useRef, useState } from "react";
+import { IDocumentService } from "../services/IDocumentService";
+import { IndexedDBDocumentService } from "../services/IndexedDBDocumentService";
+
+const documentService: IDocumentService = IndexedDBDocumentService.instance;
 
 const context = createContext<TilesetEditorPageContext>(null as never);
 export const TilesetEditorPageProvider = context.Provider;
@@ -39,7 +42,7 @@ export type TilesetEditorPageContext = {
   color: RGBA;
   setColor: (color: RGBA) => void;
   saveTilesetDocument: () => Promise<void>;
-  loadTilesetDocument: () => Promise<void>;
+  loadTilesetDocument: (id: TilesetDocument["id"]) => Promise<void>;
   setTilesetName: (name: string) => void;
 };
 
@@ -50,12 +53,6 @@ const terrainTileTool = new TerrainTileTool();
 const fillTool = new FillTool();
 
 export const TOOLS = [pencilTool, eraserTool, fillTool, jigsawTileTool, terrainTileTool];
-
-const tileset4x4Plus = new Tileset4x4Plus();
-const tileset4x4PlusJigsaw = new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES);
-const tileset4x4PlusTerrain = new Tileset4x4PlusTerrain(tileset4x4PlusJigsaw, GODOT_NEIGHBORS, EXAMPLE_TERRAIN_TILES);
-
-const editor: TilesetEditor = new TilesetEditor(tileset4x4Plus, pencilTool);
 
 function getDefaultToolForTileset<T extends BaseTileset>(tileset: T) {
   if (tileset instanceof Tileset4x4Plus) {
@@ -74,13 +71,20 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const [mode, setMode] = useState<TilesetEditorPageMode>("raw");
   const [color, setColor] = useState<RGBA>([255, 255, 255, 255]);
 
+  const tileset4x4PlusRef = useRef(new Tileset4x4Plus());
+  const tileset4x4PlusJigsawRef = useRef(new Tileset4x4PlusJigsaw(tileset4x4PlusRef.current, GODOT_TILES));
+  const tileset4x4PlusTerrainRef = useRef(
+    new Tileset4x4PlusTerrain(tileset4x4PlusJigsawRef.current, GODOT_NEIGHBORS, EXAMPLE_TERRAIN_TILES)
+  );
+  const editorRef = useRef<TilesetEditor<BaseTileset>>(new TilesetEditor(tileset4x4PlusRef.current, pencilTool));
+
   let tileset: BaseTileset;
   if (mode === "raw") {
-    tileset = tileset4x4Plus;
+    tileset = tileset4x4PlusRef.current;
   } else if (mode === "jigsaw") {
-    tileset = tileset4x4PlusJigsaw;
+    tileset = tileset4x4PlusJigsawRef.current;
   } else if (mode === "terrain") {
-    tileset = tileset4x4PlusTerrain;
+    tileset = tileset4x4PlusTerrainRef.current;
   } else {
     throw new Error(`Invalid editor mode: ${mode}`);
   }
@@ -88,9 +92,9 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
   const [tool, setTool] = useState<Tool>(getDefaultToolForTileset(tileset));
   const supportedTools = TOOLS.filter((t) => t.supportsTileset(tileset));
 
-  editor.tool = tool;
-  editor.color = color;
-  editor.tileset = tileset;
+  editorRef.current.tool = tool;
+  editorRef.current.color = color;
+  editorRef.current.tileset = tileset;
   if (!tileset.supportsTool(tool)) {
     setTool(getDefaultToolForTileset(tileset));
   }
@@ -101,11 +105,11 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
       imageData: tileset.getSourceImageData(),
     };
     setDoc(newDoc);
-    await FilesystemService.instance.saveTilesetDocument(newDoc);
+    await documentService.saveTilesetDocument(newDoc);
   }
 
-  async function loadTilesetDocument() {
-    const newDoc = await FilesystemService.instance.openTilesetDocument();
+  async function loadTilesetDocument(id: TilesetDocument["id"]) {
+    const newDoc = await documentService.loadTilesetDocument(id);
     setDoc(newDoc);
     tileset.putSourceImageData(newDoc.imageData);
     tileset.invalidate();
@@ -123,7 +127,7 @@ export function useTilesetEditorPageState(): TilesetEditorPageContext {
     color,
     setColor,
     tileset,
-    editor,
+    editor: editorRef.current,
     tilesetName: doc.name,
     saveTilesetDocument,
     loadTilesetDocument,
