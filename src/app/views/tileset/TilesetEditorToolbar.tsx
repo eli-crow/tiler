@@ -1,6 +1,8 @@
 import { ToolIcon } from "@/app/components/ToolIcon";
 import { useTilesetEditorPageContext } from "@/app/providers/TilesetEditorPageProvider";
+import { PencilTool } from "@/editor";
 import { mergeClasses } from "@/shared";
+import { PencilEditor } from "./PencilEditor";
 import classes from "./TilesetEditorToolbar.module.css";
 
 export function TilesetEditorToolbar() {
@@ -19,6 +21,10 @@ export function TilesetEditorToolbar() {
           </button>
         ))}
       </div>
+
+      <hr />
+
+      {page.tool instanceof PencilTool && <PencilEditor />}
     </div>
   );
 }

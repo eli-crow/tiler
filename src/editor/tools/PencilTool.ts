@@ -1,8 +1,11 @@
+import { clamp } from "@/shared";
 import { RGBA } from "../model";
 import { BaseTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
 const TRANSPARENT: RGBA = [0, 0, 0, 0];
+const DIAMETER_MIN = 1;
+const DIAMETER_MAX = 100;
 
 export type SupportsPencilTool = {
   setPixel(x: number, y: number, color: RGBA): void;
@@ -20,6 +23,7 @@ type ToolState =
 export class PencilTool extends Tool<SupportsPencilTool> {
   #state: ToolState = { type: "idle" };
   #erase = false;
+  #diameter = 1;
 
   get erase() {
     return this.#erase;
@@ -32,6 +36,14 @@ export class PencilTool extends Tool<SupportsPencilTool> {
 
   private get resolvedColor() {
     return this.#erase ? TRANSPARENT : this.editor.color;
+  }
+
+  get diameter() {
+    return this.#diameter;
+  }
+  set diameter(value: number) {
+    this.#diameter = clamp(value, DIAMETER_MIN, DIAMETER_MAX);
+    this.notifyChanged();
   }
 
   constructor(erase: boolean = false) {
@@ -48,7 +60,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
       return;
     }
     if (this.#state.type === "idle") {
-      this.tileset.setPixel(x, y, this.resolvedColor);
+      this.#drawCircle(x, y);
       this.#state = { type: "down", downX: x, downY: y };
       this.tileset.invalidate();
     }
@@ -66,7 +78,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     if (this.#state.type === "dragging") {
       const { lastMoveX, lastMoveY } = this.#state;
 
-      this.tileset.setPixel(x, y, this.resolvedColor);
+      this.#drawCircle(lastMoveX, lastMoveY);
 
       let currentX = lastMoveX;
       let currentY = lastMoveY;
@@ -82,7 +94,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
         currentX += deltaX / distance;
         currentY += deltaY / distance;
 
-        this.tileset.setPixel(currentX, currentY, this.resolvedColor);
+        this.#drawCircle(currentX, currentY);
       }
 
       this.tileset.invalidate();
@@ -94,5 +106,23 @@ export class PencilTool extends Tool<SupportsPencilTool> {
 
   onPointerUp(_x: number, _y: number, _event: PointerEvent) {
     this.#state = { type: "idle" };
+  }
+
+  #drawCircle(cx: number, cy: number) {
+    if (this.diameter === 1) {
+      this.tileset.setPixel(cx, cy, this.resolvedColor);
+      return;
+    }
+
+    const radius = this.diameter / 2;
+    const sqRadius = radius ** 2;
+
+    for (let y = -radius; y <= radius; y++) {
+      for (let x = -radius; x <= radius; x++) {
+        if (x ** 2 + y ** 2 <= sqRadius) {
+          this.tileset.setPixel(cx + x, cy + y, this.resolvedColor);
+        }
+      }
+    }
   }
 }

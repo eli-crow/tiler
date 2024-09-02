@@ -4,10 +4,15 @@
   position: relative;
   z-index: 1;
   border-radius: var(--radius-lg);
+  padding: 8px;
+}
+
+.root hr {
+  margin: 16px 0;
+  border: 0;
 }
 
 .toolGroup {
-  padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;

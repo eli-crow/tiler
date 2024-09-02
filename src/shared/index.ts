@@ -15,3 +15,9 @@ export type ExtendHTMLProps<Props extends object = never, Element extends HTMLEl
   keyof Props
 > &
   Props;
+
+export function clamp(value: number, min: number, max: number): number {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}

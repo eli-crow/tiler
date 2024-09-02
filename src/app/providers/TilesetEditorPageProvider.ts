@@ -144,3 +144,13 @@ export function useTilesetEditor() {
   }, []);
   return editor;
 }
+
+export function useActiveTool<T extends Tool>() {
+  const pageContext = useContext(context);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  useEffect(() => {
+    pageContext.tool.on("changed", forceUpdate);
+    return () => pageContext.tool.off("changed", forceUpdate);
+  });
+  return pageContext.tool as T;
+}
