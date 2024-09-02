@@ -43,7 +43,6 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusJigsaw>
   readonly #sourceNeighbors: TileNeighborFlattenedGrid[];
 
   constructor(sourceTilesets: Tileset[], sourceNeighbors: TileNeighborGrid[], columns: number, rows: number) {
-    console.log(sourceTilesets, sourceNeighbors);
     const tileSize = sourceTilesets[0].tileSize;
     if (!sourceTilesets.every((tileset) => tileset.tileSize === tileSize)) {
       throw new Error("Tilesets must all have the same tile size");

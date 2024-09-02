@@ -4,16 +4,16 @@ import { IndexedDBDocumentService } from "../services/IndexedDBDocumentService";
 
 const service = IndexedDBDocumentService.instance;
 
-type DocumentsContext = ReturnType<typeof useDocumentInfoState>;
+type DocumentsContext = ReturnType<typeof useDocumentsState>;
 
 const context = createContext<DocumentsContext>(null!);
 export const DocumentInfoProvider = context.Provider;
 
-export function useDocumentInfo(): DocumentsContext {
+export function useDocuments(): DocumentsContext {
   return useContext(context);
 }
 
-export function useDocumentInfoState() {
+export function useDocumentsState() {
   const [documents, setDocuments] = useState<readonly TilesetDocument[]>([]);
   const [loading, setLoading] = useState(true);
 

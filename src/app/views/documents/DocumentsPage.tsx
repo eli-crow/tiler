@@ -1,6 +1,6 @@
 import { Topbar } from "@/app/components/Topbar";
 import type { TilesetDocument } from "@/app/model";
-import { DocumentInfoProvider, useDocumentInfoState } from "@/app/providers/DocumentsProvider";
+import { DocumentInfoProvider, useDocumentsState } from "@/app/providers/DocumentsProvider";
 import classes from "./DocumentsPage.module.css";
 
 interface DocumentInfoProps {
@@ -10,7 +10,7 @@ interface DocumentInfoProps {
 }
 
 export function DocumentsPage({ onRequestNavigate, onNewDocument, onPlayground }: DocumentInfoProps) {
-  const state = useDocumentInfoState();
+  const state = useDocumentsState();
 
   function handleDocumentClick(e: React.MouseEvent) {
     e.preventDefault();

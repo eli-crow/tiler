@@ -1,6 +1,6 @@
 import { TilesetEditorView } from "@/app/components/TilesetEditorView";
 import { Topbar } from "@/app/components/Topbar";
-import { useDocumentInfoState } from "@/app/providers/DocumentsProvider";
+import { useDocumentsState } from "@/app/providers/DocumentsProvider";
 import {
   GODOT_NEIGHBORS,
   GODOT_TILES,
@@ -19,7 +19,7 @@ interface PlaygroundPageProps {
 }
 
 export function PlaygroundPage({ backAction }: PlaygroundPageProps) {
-  const state = useDocumentInfoState();
+  const state = useDocumentsState();
 
   const editor = useMemo(() => {
     if (state.loading) {
