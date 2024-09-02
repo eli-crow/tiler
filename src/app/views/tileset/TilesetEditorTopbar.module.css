@@ -16,22 +16,7 @@
 }
 
 .back {
-  appearance: none;
-  border: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1;
-  height: 40px;
   margin-right: 12px;
-  background: none;
-  border-radius: var(--radius-md);
-}
-.back:not(:hover) {
-  color: var(--icon-inactive);
-}
-.back:hover {
-  background-color: var(--bg-active);
 }
 
 .modeGroup {

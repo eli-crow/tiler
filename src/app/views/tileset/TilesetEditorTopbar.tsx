@@ -14,9 +14,11 @@ export function TilesetEditorTopbar({ backAction }: TilesetEditorTopbarProps) {
   const page = useTilesetEditorPageContext();
   return (
     <div className={mergeClasses(classes.root, "surface-translucent")}>
-      <button className={classes.back} onClick={backAction}>
-        <BackIcon />
-      </button>
+      {backAction && (
+        <IconButton className={classes.back} onClick={backAction}>
+          <BackIcon />
+        </IconButton>
+      )}
       <EditableText tag="h1" value={page.tilesetName} onChange={page.setTilesetName} className={classes.title} />
       <div className={classes.modeGroup}>
         <button className={classes.mode} aria-current={page.mode === "raw"} onClick={() => page.setMode("raw")}>
