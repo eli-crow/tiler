@@ -48,7 +48,7 @@ export function colorsMatch(a: RGBA, b: RGBA): boolean {
 
 export type TilesetEditorTool = PencilTool | JigsawTileTool;
 
-export type TerrainTile = boolean;
+export type TerrainTile = number;
 export type TerrainTileGrid = TerrainTile[][];
 export type TileNeighborGrid = number[][];
 export type FlattenedTileNeighborGrid = { x: number; y: number; neighbors: number }[];
@@ -151,21 +151,11 @@ export const GODOT_TILES: JigsawTileGrid = [
 ];
 
 export const EXAMPLE_TERRAIN_TILES: TerrainTileGrid = [
-  [false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false],
-  [false, false, false, false, false, false, false, false],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0],
 ];
-
-// export const EXAMPLE_TERRAIN_TILES: TerrainTileGrid = [
-//   [false, false, false, true, false, true, true, true],
-//   [true, false, false, true, false, false, true, false],
-//   [true, false, true, true, false, true, true, false],
-//   [false, false, true, true, false, true, true, true],
-//   [true, false, false, true, false, false, true, false],
-//   [false, false, false, true, false, true, true, true],
-//   [false, false, false, true, false, true, false, false],
-// ];

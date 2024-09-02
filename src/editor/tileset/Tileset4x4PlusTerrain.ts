@@ -54,11 +54,11 @@ export class Tileset4x4PlusTerrain
     return this.sourceTileset.getUniqueColors();
   }
 
-  getTile(x: number, y: number): boolean | null {
+  getTile(x: number, y: number): TerrainTile | null {
     return this.#tiles[y]?.[x] ?? null;
   }
 
-  setTerrainTile(x: number, y: number, tile: boolean) {
+  setTerrainTile(x: number, y: number, tile: TerrainTile) {
     if (!this.tilePositionInRange(x, y)) {
       return;
     }
@@ -67,7 +67,7 @@ export class Tileset4x4PlusTerrain
 
   resize(tileXCount: number, tileYCount: number) {
     const newTiles: TerrainTileGrid = Array.from({ length: tileYCount }, () =>
-      Array.from({ length: tileXCount }, () => false)
+      Array.from({ length: tileXCount }, () => 0)
     );
     const offsetX = Math.floor((tileXCount - this.#tiles[0].length) / 2);
     const offsetY = Math.floor((tileYCount - this.#tiles.length) / 2);
@@ -83,7 +83,7 @@ export class Tileset4x4PlusTerrain
   randomize() {
     this.#tiles.forEach((row) => {
       row.forEach((_, x) => {
-        row[x] = Math.random() < 0.75;
+        row[x] = Math.random() < 0.75 ? 1 : 0;
       });
     });
   }
