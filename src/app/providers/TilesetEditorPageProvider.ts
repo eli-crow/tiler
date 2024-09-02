@@ -1,7 +1,6 @@
 import { createTilesetDocument4x4Plus, TilesetDocument } from "@/app/model";
 import {
   BaseTileset,
-  EXAMPLE_TERRAIN_TILES,
   getDefaultToolForTileset,
   GODOT_NEIGHBORS,
   GODOT_TILES,
@@ -38,7 +37,7 @@ export function useTilesetEditorPageState() {
   const tileset4x4Plus = useMemo(() => new Tileset4x4Plus(), []);
   const tileset4x4PlusJigsaw = useMemo(() => new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES), [tileset4x4Plus]);
   const tileset4x4PlusTerrain = useMemo(
-    () => new TilesetTerrain([tileset4x4PlusJigsaw], [GODOT_NEIGHBORS], EXAMPLE_TERRAIN_TILES),
+    () => new TilesetTerrain([tileset4x4PlusJigsaw], [GODOT_NEIGHBORS], 16, 16),
     [tileset4x4PlusJigsaw]
   );
   const editor = useMemo<TilesetEditor<BaseTileset>>(

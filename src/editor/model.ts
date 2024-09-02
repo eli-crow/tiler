@@ -142,13 +142,3 @@ export const GODOT_TILES: JigsawTileGrid = [
     { sourcePosition: { x: 3, y: 2 }, innerCorners: [] },
   ],
 ];
-
-export const EXAMPLE_TERRAIN_TILES: TerrainTileGrid = [
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 0, 0, 0],
-];

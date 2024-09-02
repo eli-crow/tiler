@@ -42,17 +42,16 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusJigsaw>
   readonly sourceTilesets: Tileset[];
   readonly #sourceNeighbors: TileNeighborFlattenedGrid[];
 
-  constructor(sourceTilesets: Tileset[], sourceNeighbors: TileNeighborGrid[], tiles: TerrainTileGrid) {
+  constructor(sourceTilesets: Tileset[], sourceNeighbors: TileNeighborGrid[], columns: number, rows: number) {
+    console.log(sourceTilesets, sourceNeighbors);
     const tileSize = sourceTilesets[0].tileSize;
     if (!sourceTilesets.every((tileset) => tileset.tileSize === tileSize)) {
       throw new Error("Tilesets must all have the same tile size");
     }
 
-    const columns = tiles[0].length;
-    const rows = tiles.length;
     super(tileSize, columns, rows);
 
-    this.#tiles = tiles;
+    this.#tiles = Array.from({ length: rows }, () => Array.from({ length: columns }, () => -1));
     this.sourceTilesets = sourceTilesets;
     this.sourceTilesets.forEach((tileset) => tileset.on("dataChanged", this.#handleSourceTilesetChanged));
     this.#sourceNeighbors = sourceNeighbors.map(flattenTileNeighborGrid);

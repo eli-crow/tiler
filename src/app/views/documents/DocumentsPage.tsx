@@ -1,3 +1,4 @@
+import { Topbar } from "@/app/components/Topbar";
 import type { TilesetDocument } from "@/app/model";
 import { DocumentInfoProvider, useDocumentInfoState } from "@/app/providers/DocumentsProvider";
 import classes from "./DocumentsPage.module.css";
@@ -5,9 +6,10 @@ import classes from "./DocumentsPage.module.css";
 interface DocumentInfoProps {
   onRequestNavigate: (tilesetId: TilesetDocument["id"]) => void;
   onNewDocument: () => void;
+  onPlayground: () => void;
 }
 
-export function DocumentsPage({ onRequestNavigate, onNewDocument }: DocumentInfoProps) {
+export function DocumentsPage({ onRequestNavigate, onNewDocument, onPlayground }: DocumentInfoProps) {
   const state = useDocumentInfoState();
 
   function handleDocumentClick(e: React.MouseEvent) {
@@ -19,6 +21,11 @@ export function DocumentsPage({ onRequestNavigate, onNewDocument }: DocumentInfo
 
   return (
     <div className={classes.root}>
+      <Topbar title="Tilesets">
+        <button className={classes.button} onClick={onPlayground}>
+          Playground
+        </button>
+      </Topbar>
       <DocumentInfoProvider value={state}>
         <div className={classes.documentGroup}>
           {state.documents.map((doc) => (

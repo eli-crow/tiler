@@ -15,12 +15,19 @@ export function useDocumentInfo(): DocumentsContext {
 
 export function useDocumentInfoState() {
   const [documents, setDocuments] = useState<readonly TilesetDocument[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const handleChange = () => {
+      service.getAllDocuments().then((docs) => {
+        setDocuments(docs);
+        setLoading(false);
+      });
+    };
     service.on("changed", () => {
-      service.getAllDocuments().then(setDocuments);
+      service.getAllDocuments().then(handleChange);
     });
-    service.getAllDocuments().then(setDocuments);
+    service.getAllDocuments().then(handleChange);
   }, []);
 
   const documentsWithImageURL = documents.map((doc) => {
@@ -32,5 +39,5 @@ export function useDocumentInfoState() {
     service.deleteTilesetDocument(id);
   }
 
-  return { documents: documentsWithImageURL, deleteDocument };
+  return { documents: documentsWithImageURL, deleteDocument, loading };
 }

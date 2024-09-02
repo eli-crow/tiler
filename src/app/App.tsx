@@ -1,16 +1,29 @@
 import { useState } from "react";
 import type { TilesetDocument } from "./model";
 import { DocumentsPage } from "./views/documents/DocumentsPage";
+import { PlaygroundPage } from "./views/documents/PlaygroundPage";
 import { createNewSymbol, TilesetEditorPage } from "./views/tileset/TilesetEditorPage";
 
-export function App() {
-  const [openDocumentId, setOpenDocumentId] = useState<TilesetDocument["id"] | null | typeof createNewSymbol>(null);
+const playgroundSymbol = Symbol("playground");
 
-  if (openDocumentId === null) {
+export function App() {
+  const [view, setView] = useState<TilesetDocument["id"] | null | typeof createNewSymbol | typeof playgroundSymbol>(
+    null
+  );
+
+  if (view === null) {
     return (
-      <DocumentsPage onRequestNavigate={setOpenDocumentId} onNewDocument={() => setOpenDocumentId(createNewSymbol)} />
+      <DocumentsPage
+        onRequestNavigate={setView}
+        onNewDocument={() => setView(createNewSymbol)}
+        onPlayground={() => setView(playgroundSymbol)}
+      />
     );
   }
 
-  return <TilesetEditorPage documentId={openDocumentId} backAction={() => setOpenDocumentId(null)} />;
+  if (view === playgroundSymbol) {
+    return <PlaygroundPage backAction={() => setView(null)} />;
+  }
+
+  return <TilesetEditorPage documentId={view} backAction={() => setView(null)} />;
 }

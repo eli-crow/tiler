@@ -1,11 +1,11 @@
 import { TilesetDocument } from "@/app/model";
 import { TilesetEditorPageProvider, useTilesetEditorPageState } from "@/app/providers/TilesetEditorPageProvider";
 import { useEffect } from "react";
+import { TilesetEditorView } from "../../components/TilesetEditorView";
 import classes from "./TilesetEditorPage.module.css";
 import { TilesetEditorToolbar } from "./TilesetEditorToolbar";
 import { TilesetEditorToolSettings } from "./TilesetEditorToolSettings";
 import { TilesetEditorTopbar } from "./TilesetEditorTopbar";
-import { TilesetEditorView } from "./TilesetEditorView";
 
 export const createNewSymbol: unique symbol = Symbol("createNew");
 

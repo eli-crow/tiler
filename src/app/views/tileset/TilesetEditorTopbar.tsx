@@ -1,9 +1,7 @@
-import EditableText from "@/app/components/EditableText";
 import { IconButton } from "@/app/components/IconButton";
-import BackIcon from "@/app/icons/back.svg?react";
+import { Topbar } from "@/app/components/Topbar";
 import GuidesIcon from "@/app/icons/guides.svg?react";
 import { useTilesetEditorPageContext } from "@/app/providers/TilesetEditorPageProvider";
-import { mergeClasses } from "@/shared";
 import classes from "./TilesetEditorTopbar.module.css";
 
 interface TilesetEditorTopbarProps {
@@ -12,14 +10,9 @@ interface TilesetEditorTopbarProps {
 
 export function TilesetEditorTopbar({ backAction }: TilesetEditorTopbarProps) {
   const page = useTilesetEditorPageContext();
+
   return (
-    <div className={mergeClasses(classes.root, "surface-translucent")}>
-      {backAction && (
-        <IconButton className={classes.back} onClick={backAction}>
-          <BackIcon />
-        </IconButton>
-      )}
-      <EditableText tag="h1" value={page.tilesetName} onChange={page.setTilesetName} className={classes.title} />
+    <Topbar title={page.tilesetName} setTitle={page.setTilesetName} backAction={backAction}>
       <div className={classes.modeGroup}>
         <button className={classes.mode} aria-current={page.mode === "raw"} onClick={() => page.setMode("raw")}>
           Tileset
@@ -39,6 +32,6 @@ export function TilesetEditorTopbar({ backAction }: TilesetEditorTopbarProps) {
         </IconButton>
         <button onClick={() => page.saveTilesetDocument()}>Save</button>
       </div>
-    </div>
+    </Topbar>
   );
 }

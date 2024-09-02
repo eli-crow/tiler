@@ -1,24 +1,3 @@
-.root {
-  grid-area: topbar;
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  position: relative;
-  z-index: 1;
-  border-radius: var(--radius-lg);
-  justify-self: flex-start;
-}
-
-.title {
-  font-size: var(--text-size-title);
-  font-weight: 500;
-  margin-right: 32px;
-}
-
-.back {
-  margin-right: 12px;
-}
-
 .modeGroup {
   display: flex;
   gap: 8px;
