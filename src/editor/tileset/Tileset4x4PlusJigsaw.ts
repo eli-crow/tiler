@@ -1,4 +1,11 @@
-import { tilesMatch, type JigsawTileGrid, type RGBA, type Tile, type TileInnerCorner } from "@/editor/model";
+import {
+  jigsawTilesMatch,
+  TilePosition,
+  type JigsawTileGrid,
+  type RGBA,
+  type Tile4x4PlusJigsaw,
+  type TileInnerCorner,
+} from "@/editor/model";
 import { SupportsJigsawTileTool } from "@/editor/tools/JigsawTileTool";
 import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { BaseTileset, ProxyTileset } from "./BaseTileset";
@@ -28,13 +35,13 @@ export class Tileset4x4PlusJigsaw
     return this.sourceTileset.getUniqueColors();
   }
 
-  getTileImageData(tile: Tile): ImageData {
-    const data = this.sourceTileset.getTileImageData(tile);
-    tile.corners.forEach((corner) => this.#applyInnerCorner(data, corner));
+  getSourceTileImageData(tile: Tile4x4PlusJigsaw): ImageData {
+    const data = this.sourceTileset.getTileImageData(tile.sourcePosition);
+    tile.innerCorners.forEach((corner) => this.#applyInnerCorner(data, corner));
     return data;
   }
 
-  getTileAtPoint(x: number, y: number): Tile | null {
+  getTileAtPoint(x: number, y: number): Tile4x4PlusJigsaw | null {
     const position = this.getTilePositionAtPixel(x, y);
     if (!position) {
       return null;
@@ -50,17 +57,18 @@ export class Tileset4x4PlusJigsaw
     }
     const offsetX = x % this.tileSize;
     const offsetY = y % this.tileSize;
-    this.setTilePixel(tile, offsetX, offsetY, color);
+    this.setTilePixel(tile.sourcePosition, offsetX, offsetY, color);
   }
 
-  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
+  setTilePixel(tilePosition: TilePosition, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
 
+    const tile = this.getTile(tilePosition);
     let isInnerTR = false;
     let isInnerBR = false;
     let isInnerBL = false;
     let isInnerTL = false;
-    tile.corners.forEach((corner) => {
+    tile?.innerCorners.forEach((corner) => {
       if (corner === "tr") {
         isInnerTR = true;
       } else if (corner === "br") {
@@ -84,33 +92,30 @@ export class Tileset4x4PlusJigsaw
     ) {
       this.#setInnerCornerTilePixel(offsetX, offsetY, color);
     } else {
-      const size = this.tileSize;
-      const x = tile.x * size + offsetX;
-      const y = tile.y * size + offsetY;
-      this.sourceTileset.setPixel(x, y, color);
+      this.sourceTileset.setTilePixel(tilePosition, offsetX, offsetY, color);
     }
   }
 
-  getTile(x: number, y: number): Tile | null {
-    return this.tiles[y]?.[x] ?? null;
+  getTile(position: TilePosition): Tile4x4PlusJigsaw | null {
+    return this.tiles[position.y]?.[position.x] ?? null;
   }
 
-  setTile(x: number, y: number, tile: Tile) {
-    const existingTile = this.getTile(x, y);
-    if (existingTile && tilesMatch(existingTile, tile)) {
+  setTile(position: TilePosition, tile: Tile4x4PlusJigsaw) {
+    const existingTile = this.getTile(position);
+    if (existingTile && jigsawTilesMatch(existingTile, tile)) {
       return;
     }
-    this.tiles[y][x] = tile;
+    this.tiles[position.y][position.x] = tile;
   }
 
   #draw() {
     this.context.clearRect(0, 0, this.width, this.height);
-    this.tiles.forEach((row, y) => {
-      row.forEach((tile, x) => {
-        const imageData = this.getTileImageData(tile);
-        const targetX = x * this.tileSize;
-        const targetY = y * this.tileSize;
-        this.context.putImageData(imageData, targetX, targetY);
+    this.tiles.forEach((row, targetTileX) => {
+      row.forEach((tile, targetTileY) => {
+        const sourceImageData = this.getSourceTileImageData(tile);
+        const targetX = targetTileY * this.tileSize;
+        const targetY = targetTileX * this.tileSize;
+        this.context.putImageData(sourceImageData, targetX, targetY);
       });
     });
   }

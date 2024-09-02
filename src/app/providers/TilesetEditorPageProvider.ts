@@ -8,8 +8,8 @@ import {
   RGBA,
   Tileset4x4Plus,
   Tileset4x4PlusJigsaw,
-  Tileset4x4PlusTerrain,
   TilesetEditor,
+  TilesetTerrain,
   Tool,
   TOOL_INSTANCES,
   TOOLS,
@@ -38,7 +38,7 @@ export function useTilesetEditorPageState() {
   const tileset4x4Plus = useMemo(() => new Tileset4x4Plus(), []);
   const tileset4x4PlusJigsaw = useMemo(() => new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES), [tileset4x4Plus]);
   const tileset4x4PlusTerrain = useMemo(
-    () => new Tileset4x4PlusTerrain(tileset4x4PlusJigsaw, GODOT_NEIGHBORS, EXAMPLE_TERRAIN_TILES),
+    () => new TilesetTerrain([tileset4x4PlusJigsaw], [GODOT_NEIGHBORS], EXAMPLE_TERRAIN_TILES),
     [tileset4x4PlusJigsaw]
   );
   const editor = useMemo<TilesetEditor<BaseTileset>>(

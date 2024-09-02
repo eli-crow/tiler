@@ -1,5 +1,5 @@
 import { EventEmitter } from "@/editor/events/EventEmitter";
-import type { RGBA, Tile, TilePosition } from "@/editor/model";
+import type { RGBA, TilePosition } from "@/editor/model";
 import { SupportsFillTool } from "@/editor/tools/FillTool";
 import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { Tool } from "@/editor/tools/Tool";
@@ -15,6 +15,14 @@ export interface ProxyTileset {
 
 export function isProxyTileset(tileset: any): tileset is ProxyTileset {
   return tileset instanceof BaseTileset && "sourceTileset" in tileset;
+}
+
+export interface MultiProxyTileset {
+  sourceTilesets: BaseTileset[];
+}
+
+export function isMultiProxyTileset(tileset: any): tileset is MultiProxyTileset {
+  return tileset instanceof BaseTileset && "sourceTilesets" in tileset;
 }
 
 export abstract class BaseTileset implements SupportsPencilTool, SupportsFillTool {
@@ -52,7 +60,8 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     this.context.imageSmoothingEnabled = false;
   }
 
-  tilePositionInRange(x: number, y: number): boolean {
+  tilePositionInRange(tilePosition: TilePosition): boolean {
+    const { x, y } = tilePosition;
     return x >= 0 && x < this.tileColumns && y >= 0 && y < this.tileRows;
   }
 
@@ -65,10 +74,10 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     return { x: tileX, y: tileY };
   }
 
-  setTilePixel(tile: Tile, offsetX: number, offsetY: number, color: RGBA) {
+  setTilePixel(position: TilePosition, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
-    const x = tile.x * size + offsetX;
-    const y = tile.y * size + offsetY;
+    const x = position.x * size + offsetX;
+    const y = position.y * size + offsetY;
     this.setPixel(x, y, color);
   }
 
@@ -86,16 +95,19 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
   setSourceDataFromImageSource(image: CanvasImageSource) {
     if (isProxyTileset(this)) {
       this.sourceTileset.setSourceDataFromImageSource(image);
+    } else if (isMultiProxyTileset(this)) {
+      if (this.sourceTilesets.length !== 1) throw new Error("Cannot set source data from image on a MultiProxyTileset");
+      this.sourceTilesets[0].setSourceDataFromImageSource(image);
     } else {
       this.context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
       this.context.drawImage(image, 0, 0);
     }
   }
 
-  getTileImageData(tile: Tile): ImageData {
+  getTileImageData(tilePosition: TilePosition): ImageData {
     const size = this.tileSize;
-    const x = tile.x * size;
-    const y = tile.y * size;
+    const x = tilePosition.x * size;
+    const y = tilePosition.y * size;
     const data = this.context.getImageData(x, y, size, size);
     return data;
   }
@@ -114,6 +126,8 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
   invalidate() {
     if (isProxyTileset(this)) {
       this.sourceTileset.invalidate();
+    } else if (isMultiProxyTileset(this)) {
+      this.sourceTilesets.forEach((tileset) => tileset.invalidate());
     }
     this.#emitter.emit("dataChanged");
   }
@@ -131,6 +145,10 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
   getSourceImageData(): ImageData {
     if (isProxyTileset(this)) {
       return this.sourceTileset.getSourceImageData();
+    } else if (isMultiProxyTileset(this)) {
+      if (this.sourceTilesets.length !== 1)
+        throw new Error("Cannot get source image data on a MultiProxyTileset with multiple sources");
+      return this.sourceTilesets[0].getSourceImageData();
     } else {
       return this.getImageData();
     }
@@ -139,6 +157,9 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
   putSourceImageData(imageData: ImageData) {
     if (isProxyTileset(this)) {
       this.sourceTileset.putSourceImageData(imageData);
+    } else if (isMultiProxyTileset(this)) {
+      if (this.sourceTilesets.length !== 1) throw new Error("Cannot put source image data on a MultiProxyTileset");
+      this.sourceTilesets[0].putSourceImageData(imageData);
     } else {
       this.context.putImageData(imageData, 0, 0);
     }
@@ -146,6 +167,27 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
 
   getUniqueColors(): [RGBA, number][] {
     const colorCounts: Map<string, number> = new Map();
+
+    if (isProxyTileset(this)) {
+      return this.sourceTileset.getUniqueColors();
+    }
+
+    if (isMultiProxyTileset(this)) {
+      // TODO: validate generated code for unqiue colors in terrain tileset
+      return this.sourceTilesets.reduce((acc, tileset) => {
+        const colors = tileset.getUniqueColors();
+        colors.forEach(([color, count]) => {
+          const hash = color.join(",");
+          if (colorCounts.has(hash)) {
+            colorCounts.set(hash, colorCounts.get(hash)! + count);
+          } else {
+            colorCounts.set(hash, count);
+          }
+        });
+        return acc;
+      }, [] as [RGBA, number][]);
+    }
+
     const data = this.context.getImageData(0, 0, this.#canvas.width, this.#canvas.height).data;
     for (let i = 0; i < data.length; i += 4) {
       const color: RGBA = [data[i], data[i + 1], data[i + 2], data[i + 3]];

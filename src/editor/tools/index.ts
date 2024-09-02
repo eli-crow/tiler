@@ -1,4 +1,4 @@
-import { BaseTileset, Tileset4x4Plus, Tileset4x4PlusJigsaw, Tileset4x4PlusTerrain } from "../tileset";
+import { BaseTileset, Tileset4x4Plus, Tileset4x4PlusJigsaw, TilesetTerrain } from "../tileset";
 import { FillTool } from "./FillTool";
 import { JigsawTileTool } from "./JigsawTileTool";
 import { PencilTool } from "./PencilTool";
@@ -26,7 +26,7 @@ export function getDefaultToolForTileset<T extends BaseTileset>(tileset: T) {
     return TOOL_INSTANCES.pencil;
   } else if (tileset instanceof Tileset4x4PlusJigsaw) {
     return TOOL_INSTANCES.jigsawTile;
-  } else if (tileset instanceof Tileset4x4PlusTerrain) {
+  } else if (tileset instanceof TilesetTerrain) {
     return TOOL_INSTANCES.terrainTile;
   } else {
     throw new Error(`Unknown tileset type: ${tileset}`);

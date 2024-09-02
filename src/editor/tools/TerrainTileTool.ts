@@ -1,9 +1,9 @@
-import { TerrainTile } from "../model";
+import { TerrainTile, TilePosition } from "../model";
 import { BaseTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
 export type SupportsTerrainTileTool = {
-  setTerrainTile(x: number, y: number, tile: TerrainTile): void;
+  setTerrainTile(position: TilePosition, tile: TerrainTile): void;
 };
 
 function isSupportsTerrainTileTool(value: any): value is SupportsTerrainTileTool {
@@ -14,7 +14,7 @@ type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
 export class TerrainTileTool extends Tool<SupportsTerrainTileTool> {
   #state: ToolState = { type: "idle" };
-  #tile: TerrainTile = 1;
+  #tile: TerrainTile = 0;
 
   get tile() {
     return this.#tile;
@@ -40,7 +40,7 @@ export class TerrainTileTool extends Tool<SupportsTerrainTileTool> {
       if (!position) {
         return;
       }
-      this.tileset.setTerrainTile(position.x, position.y, shouldErase ? 0 : this.#tile);
+      this.tileset.setTerrainTile(position, shouldErase ? -1 : this.#tile);
       this.tileset.invalidate();
       this.#state = { type: "down" };
     }
@@ -61,7 +61,7 @@ export class TerrainTileTool extends Tool<SupportsTerrainTileTool> {
       if (!position) {
         return;
       }
-      this.tileset.setTerrainTile(position.x, position.y, shouldErase ? 0 : this.#tile);
+      this.tileset.setTerrainTile(position, shouldErase ? -1 : this.#tile);
       this.tileset.invalidate();
     }
   }

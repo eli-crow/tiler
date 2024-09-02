@@ -1,9 +1,9 @@
-import { Tile } from "../model";
+import { Tile4x4PlusJigsaw, TilePosition } from "../model";
 import { BaseTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
 export type SupportsJigsawTileTool = {
-  setTile(x: number, y: number, tile: Tile): void;
+  setTile(position: TilePosition, tile: Tile4x4PlusJigsaw): void;
 };
 
 function isSupportsJigsawTileTool(value: any): value is SupportsJigsawTileTool {
@@ -14,13 +14,13 @@ type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
 export class JigsawTileTool extends Tool<SupportsJigsawTileTool> {
   #state: ToolState = { type: "idle" };
-  #tile: Tile = { x: 0, y: 0, corners: [] };
+  #tile: Tile4x4PlusJigsaw = { sourcePosition: { x: 0, y: 0 }, innerCorners: [] };
 
   get tile() {
     return this.#tile;
   }
 
-  set tile(tile: Tile) {
+  set tile(tile: Tile4x4PlusJigsaw) {
     this.#tile = tile;
     this.notifyChanged();
   }
@@ -39,7 +39,7 @@ export class JigsawTileTool extends Tool<SupportsJigsawTileTool> {
       if (!position) {
         return;
       }
-      this.tileset.setTile(position.x, position.y, this.tile);
+      this.tileset.setTile(position, this.tile);
       this.tileset.invalidate();
       this.#state = { type: "down" };
     }
@@ -59,7 +59,7 @@ export class JigsawTileTool extends Tool<SupportsJigsawTileTool> {
       if (!position) {
         return;
       }
-      this.tileset.setTile(position.x, position.y, this.tile);
+      this.tileset.setTile(position, this.tile);
       this.tileset.invalidate();
     }
   }
