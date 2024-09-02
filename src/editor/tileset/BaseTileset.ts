@@ -173,19 +173,22 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     }
 
     if (isMultiProxyTileset(this)) {
-      // TODO: validate generated code for unqiue colors in terrain tileset
-      return this.sourceTilesets.reduce((acc, tileset) => {
+      const uniqueColors = new Map<string, number>();
+      this.sourceTilesets.forEach((tileset) => {
         const colors = tileset.getUniqueColors();
         colors.forEach(([color, count]) => {
           const hash = color.join(",");
-          if (colorCounts.has(hash)) {
-            colorCounts.set(hash, colorCounts.get(hash)! + count);
+          if (uniqueColors.has(hash)) {
+            uniqueColors.set(hash, uniqueColors.get(hash)! + count);
           } else {
-            colorCounts.set(hash, count);
+            uniqueColors.set(hash, count);
           }
         });
-        return acc;
-      }, [] as [RGBA, number][]);
+      });
+      return Array.from(uniqueColors.entries()).map(([hash, count]) => {
+        const color: RGBA = hash.split(",").map(Number) as RGBA;
+        return [color, count] as [RGBA, number];
+      });
     }
 
     const data = this.context.getImageData(0, 0, this.#canvas.width, this.#canvas.height).data;
