@@ -62,7 +62,7 @@ export function createTilesetDocument4x4Plus(): Tileset4x4PlusDocument {
     id: uuid(),
     version: 1,
     type: "tileset",
-    name: "Untitled Tileset",
+    name: "Untitled",
     tilesetType: "4x4Plus",
     imageData: new ImageData(1, 1),
   };
