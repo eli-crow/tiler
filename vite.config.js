@@ -7,6 +7,7 @@ const SRC_PATH = fileURLToPath(new URL('./src', import.meta.url))
 
 export default defineConfig({
     plugins: [react(), svgr()],
+    base: './',
     resolve: {
         base: './',
         alias: [
