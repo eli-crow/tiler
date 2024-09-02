@@ -11,7 +11,7 @@ const ZOOM_SENSITIVITY = 0.005;
 const ZOOM_PINCH_SENSITIVITY = 0.045;
 const UNDO_GESTURE_DELAY_MS = 150;
 const UNDO_GESTURE_MAX_DISTANCE = 20;
-const UNDO_MAX_COUNT = 100;
+const UNDO_REDO_MAX_COUNT = 100;
 
 interface Events {
   changed(): void;
@@ -258,22 +258,42 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#canvas.remove();
   }
 
-  // region Undo
+  // region Undo / Redo
   readonly #undoStack: ImageData[] = [];
+  readonly #redoStack: ImageData[] = [];
 
   undo = () => {
     if (this.#undoStack.length === 0) return;
-    const imageData = this.#undoStack.pop()!;
-    this.tileset.putSourceImageData(imageData);
+    const undoImageData = this.#undoStack.pop()!;
+    this.#storeRedo();
+    this.tileset.putSourceImageData(undoImageData);
     this.tileset.invalidate();
+  };
+
+  redo = () => {
+    if (this.#redoStack.length === 0) return;
+    const redoImageData = this.#redoStack.pop()!;
+    this.#storeUndo();
+    this.tileset.putSourceImageData(redoImageData);
+    this.tileset.invalidate();
+  };
+
+  #storeRedo = () => {
+    const imageData = this.tileset.getSourceImageData();
+    this.#redoStack.push(imageData);
+    if (this.#redoStack.length > UNDO_REDO_MAX_COUNT) {
+      this.#redoStack.shift();
+    }
   };
 
   #storeUndo = () => {
     const imageData = this.tileset.getSourceImageData();
     this.#undoStack.push(imageData);
-    if (this.#undoStack.length > UNDO_MAX_COUNT) {
+    if (this.#undoStack.length > UNDO_REDO_MAX_COUNT) {
       this.#undoStack.shift();
     }
+
+    this.#redoStack.length = 0;
   };
 
   // region Input Handlers

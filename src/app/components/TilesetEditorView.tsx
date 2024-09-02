@@ -29,16 +29,23 @@ export function TilesetEditorView({ editor }: TilesetEditorViewProps) {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      let action: (() => void) | null = null;
       if ((e.metaKey || e.ctrlKey) && e.key === "c") {
-        e.preventDefault();
-        e.stopPropagation();
-        editor.copyToClipboard();
+        action = editor.copyToClipboard;
+      } else if (
+        ((e.metaKey || e.ctrlKey) && e.key === "y") ||
+        ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "z")
+      ) {
+        action = editor.redo;
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        action = editor.undo;
+        editor.undo();
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+      if (action) {
         e.preventDefault();
         e.stopPropagation();
-        editor.undo();
+        action();
       }
     };
 
