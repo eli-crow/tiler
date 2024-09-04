@@ -22,7 +22,7 @@ export function Topbar({ children, backAction, title, setTitle, className }: Top
         </IconButton>
       )}
       {setTitle ? (
-        <EditableText tag="h1" value={title} onChange={setTimeout} className={classes.title} />
+        <EditableText tag="h1" value={title} onChange={setTitle} className={classes.title} />
       ) : (
         <h1 className={classes.title}>{title}</h1>
       )}
