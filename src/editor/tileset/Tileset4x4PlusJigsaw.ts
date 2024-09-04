@@ -41,58 +41,41 @@ export class Tileset4x4PlusJigsaw
     return data;
   }
 
-  getTileAtPoint(x: number, y: number): Tile4x4PlusJigsaw | null {
-    const position = this.getTilePositionAtPixel(x, y);
-    if (!position) {
-      return null;
-    }
-    const tile = this.tiles[position.y][position.x];
-    return tile;
-  }
-
   setPixel(x: number, y: number, color: RGBA) {
-    const tile = this.getTileAtPoint(x, y);
+    const tilePosition = this.getTilePositionAtPixel(x, y);
+    if (!tilePosition) {
+      return;
+    }
+    const tile = this.getTile(tilePosition);
     if (!tile) {
       return;
     }
     const offsetX = x % this.tileSize;
     const offsetY = y % this.tileSize;
-    this.setTilePixel(tile.sourcePosition, offsetX, offsetY, color);
+    this.setTilePixel(tilePosition, offsetX, offsetY, color);
   }
 
   setTilePixel(tilePosition: TilePosition, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
 
     const tile = this.getTile(tilePosition);
-    let isInnerTR = false;
-    let isInnerBR = false;
-    let isInnerBL = false;
-    let isInnerTL = false;
-    tile?.innerCorners.forEach((corner) => {
-      if (corner === "tr") {
-        isInnerTR = true;
-      } else if (corner === "br") {
-        isInnerBR = true;
-      } else if (corner === "bl") {
-        isInnerBL = true;
-      } else if (corner === "tl") {
-        isInnerTL = true;
-      }
-    });
+    if (!tile) return;
+    const { innerCorners } = tile;
 
     const isLeft = offsetX < size / 2;
     const isTop = offsetY < size / 2;
     const isRight = !isLeft;
     const isBottom = !isTop;
+
     if (
-      (isInnerTR && isTop && isRight) ||
-      (isInnerBR && isBottom && isRight) ||
-      (isInnerBL && isBottom && isLeft) ||
-      (isInnerTL && isTop && isLeft)
+      (innerCorners.includes("tr") && isTop && isRight) ||
+      (innerCorners.includes("br") && isBottom && isRight) ||
+      (innerCorners.includes("bl") && isBottom && isLeft) ||
+      (innerCorners.includes("tl") && isTop && isLeft)
     ) {
       this.#setInnerCornerTilePixel(offsetX, offsetY, color);
     } else {
-      this.sourceTileset.setTilePixel(tilePosition, offsetX, offsetY, color);
+      this.sourceTileset.setTilePixel(tile.sourcePosition, offsetX, offsetY, color);
     }
   }
 

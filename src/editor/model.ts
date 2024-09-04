@@ -94,7 +94,8 @@ export const GODOT_TILES: JigsawTileGrid = [
     { sourcePosition: { x: 0, y: 1 }, innerCorners: [] },
 
     { sourcePosition: { x: 1, y: 1 }, innerCorners: ["br", "tr"] },
-    { sourcePosition: { x: 2, y: 1 }, innerCorners: ["bl", "br", "tr", "tl"] },
+    // @ts-ignore
+    { x: 9, sourcePosition: { x: 2, y: 1 }, innerCorners: ["bl", "br", "tr", "tl"] },
     { sourcePosition: { x: 3, y: 1 }, innerCorners: ["tl", "bl"] },
 
     { sourcePosition: { x: 1, y: 1 }, innerCorners: ["tr"] },
