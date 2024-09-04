@@ -11,18 +11,22 @@ import {
 } from "@/editor/model";
 import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { SupportsTerrainTileTool } from "@/editor/tools/TerrainTileTool";
+import { hasBits, maskedBitsMatch } from "@/shared";
 import { BaseTileset, MultiProxyTileset } from "./BaseTileset";
 import type { Tileset4x4PlusJigsaw } from "./Tileset4x4PlusJigsaw";
 
-const BIT_S = 1 << 8;
-const BIT_T = 1 << 7;
-const BIT_R = 1 << 6;
-const BIT_B = 1 << 5;
-const BIT_L = 1 << 4;
-const BIT_TR = 1 << 3;
-const BIT_BR = 1 << 2;
-const BIT_BL = 1 << 1;
-const BIT_TL = 1 << 0;
+enum Neighbor {
+  Self = 1 << 8,
+  Top = 1 << 7,
+  Right = 1 << 6,
+  Bottom = 1 << 5,
+  Left = 1 << 4,
+  TopRight = 1 << 3,
+  BottomRight = 1 << 2,
+  BottomLeft = 1 << 1,
+  TopLeft = 1 << 0,
+  Sides = Neighbor.Top | Neighbor.Right | Neighbor.Bottom | Neighbor.Left,
+}
 
 export type Terrain<Tileset extends Tileset4x4PlusJigsaw> = {
   tileset: Tileset;
@@ -87,47 +91,33 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusJigsaw>
     });
   }
 
-  setPixel(targetX: number, targetY: number, color: RGBA): void {
-    const position = this.getTilePositionAtPixel(targetX, targetY);
-    if (!position) {
-      return;
-    }
+  setPixel(x: number, y: number, color: RGBA): void {
+    const tilePosition = this.getTilePositionAtPixel(x, y);
+    if (!tilePosition) return;
 
-    const info = this.#getSourceTileInfo(position);
-    if (!info) {
-      return;
-    }
-    const { sourceTile, sourceIndex } = info;
+    const neighbors = this.#getTileNeighbors(tilePosition);
+    if (!hasBits(neighbors, Neighbor.Self)) return;
 
-    const neighbors = this.getTileNeighbors(position);
+    const info = this.#getSourceTileInfo(tilePosition);
+    if (!info) return;
 
-    if ((neighbors & BIT_S) !== BIT_S) {
-      return;
-    }
-
-    const offsetX = targetX % this.tileSize;
-    const offsetY = targetY % this.tileSize;
-    this.sourceTilesets[sourceIndex].setTilePixel(sourceTile.sourcePosition, offsetX, offsetY, color);
+    const offsetX = x % this.tileSize;
+    const offsetY = y % this.tileSize;
+    this.sourceTilesets[info.sourceIndex].setTilePixel(info.sourcePosition, offsetX, offsetY, color);
   }
 
-  #bitMatches(source: TileNeighbor, target: TileNeighbor, bit: number): boolean {
-    return (source & bit) === (target & bit);
-  }
-
-  #hasBit(source: TileNeighbor, bit: number): boolean {
-    return (source & bit) === bit;
-  }
-
-  #getSourceTileInfo(position: TilePosition): { sourceTile: Tile4x4PlusJigsaw; sourceIndex: number } | null {
+  #getSourceTileInfo(
+    position: TilePosition
+  ): { sourcePosition: TilePosition; sourceTile: Tile4x4PlusJigsaw; sourceIndex: number } | null {
     if (!this.tilePositionInRange(position)) {
       return null;
     }
 
-    const targetNeighbors = this.getTileNeighbors(position);
-    const has_t = this.#hasBit(targetNeighbors, BIT_T);
-    const has_r = this.#hasBit(targetNeighbors, BIT_R);
-    const has_b = this.#hasBit(targetNeighbors, BIT_B);
-    const has_l = this.#hasBit(targetNeighbors, BIT_L);
+    const targetNeighbors = this.#getTileNeighbors(position);
+    const has_t = hasBits(targetNeighbors, Neighbor.Top);
+    const has_r = hasBits(targetNeighbors, Neighbor.Right);
+    const has_b = hasBits(targetNeighbors, Neighbor.Bottom);
+    const has_l = hasBits(targetNeighbors, Neighbor.Left);
     const check_tr = has_t && has_r;
     const check_br = has_r && has_b;
     const check_bl = has_b && has_l;
@@ -139,21 +129,17 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusJigsaw>
     }
 
     const nomatch = (sourceNeighbors: TileNeighbor, bit: number) => {
-      return !this.#bitMatches(sourceNeighbors, targetNeighbors, bit);
+      return !maskedBitsMatch(sourceNeighbors, targetNeighbors, bit);
     };
 
     let sourcePosition: TilePosition | null = null;
     for (const { x, y, neighbors: s } of this.#sourceNeighbors[sourceIndex]) {
-      if (nomatch(s, BIT_S)) continue;
-      if (nomatch(s, BIT_T)) continue;
-      if (nomatch(s, BIT_R)) continue;
-      if (nomatch(s, BIT_B)) continue;
-      if (nomatch(s, BIT_L)) continue;
+      if (nomatch(s, Neighbor.Sides)) continue;
 
-      if (check_tr && nomatch(s, BIT_TR)) continue;
-      if (check_br && nomatch(s, BIT_BR)) continue;
-      if (check_bl && nomatch(s, BIT_BL)) continue;
-      if (check_tl && nomatch(s, BIT_TL)) continue;
+      if (check_tr && nomatch(s, Neighbor.TopRight)) continue;
+      if (check_br && nomatch(s, Neighbor.BottomRight)) continue;
+      if (check_bl && nomatch(s, Neighbor.BottomLeft)) continue;
+      if (check_tl && nomatch(s, Neighbor.TopLeft)) continue;
 
       sourcePosition = { x, y };
       break;
@@ -169,22 +155,22 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusJigsaw>
       return null;
     }
 
-    return { sourceTile, sourceIndex };
+    return { sourcePosition, sourceTile, sourceIndex };
   }
 
-  getTileNeighbors(position: TilePosition): number {
+  #getTileNeighbors(position: TilePosition): number {
     const { x, y } = position;
     const has = (x: number, y: number) => this.hasTileAt({ x, y });
     let result = 0;
-    if (has(x + 0, y + 0)) result |= BIT_S;
-    if (has(x + 0, y - 1)) result |= BIT_T;
-    if (has(x + 1, y + 0)) result |= BIT_R;
-    if (has(x + 0, y + 1)) result |= BIT_B;
-    if (has(x - 1, y + 0)) result |= BIT_L;
-    if (has(x + 1, y - 1)) result |= BIT_TR;
-    if (has(x + 1, y + 1)) result |= BIT_BR;
-    if (has(x - 1, y + 1)) result |= BIT_BL;
-    if (has(x - 1, y - 1)) result |= BIT_TL;
+    if (has(x + 0, y + 0)) result |= Neighbor.Self;
+    if (has(x + 0, y - 1)) result |= Neighbor.Top;
+    if (has(x + 1, y + 0)) result |= Neighbor.Right;
+    if (has(x + 0, y + 1)) result |= Neighbor.Bottom;
+    if (has(x - 1, y + 0)) result |= Neighbor.Left;
+    if (has(x + 1, y - 1)) result |= Neighbor.TopRight;
+    if (has(x + 1, y + 1)) result |= Neighbor.BottomRight;
+    if (has(x - 1, y + 1)) result |= Neighbor.BottomLeft;
+    if (has(x - 1, y - 1)) result |= Neighbor.TopLeft;
     return result;
   }
 

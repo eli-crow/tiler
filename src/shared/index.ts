@@ -21,3 +21,11 @@ export function clamp(value: number, min: number, max: number): number {
   if (value > max) return max;
   return value;
 }
+
+export function maskedBitsMatch(source: number, target: number, mask: number): boolean {
+  return (source & mask) === (target & mask);
+}
+
+export function hasBits(source: number, bits: number): boolean {
+  return (source & bits) === bits;
+}
