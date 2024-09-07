@@ -1,4 +1,4 @@
-import { JigsawTileTool } from "./tools/JigsawTileTool";
+import { CombosTileTool } from "./tools/CombosTileTool";
 import { PencilTool } from "./tools/PencilTool";
 
 export type PixelPoint = {
@@ -11,7 +11,7 @@ export type TilePosition = {
   y: number;
 };
 
-export type Tile4x4PlusJigsaw = {
+export type Tile4x4PlusCombos = {
   sourcePosition: TilePosition;
   innerCorners: readonly TileInnerCorner[];
 };
@@ -20,7 +20,7 @@ export function tilePositionsMatch(a: TilePosition, b: TilePosition): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
-export function jigsawTilesMatch(a: Tile4x4PlusJigsaw, b: Tile4x4PlusJigsaw): boolean {
+export function CombosTilesMatch(a: Tile4x4PlusCombos, b: Tile4x4PlusCombos): boolean {
   return (
     tilePositionsMatch(a.sourcePosition, b.sourcePosition) &&
     a.innerCorners.length === b.innerCorners.length &&
@@ -30,7 +30,7 @@ export function jigsawTilesMatch(a: Tile4x4PlusJigsaw, b: Tile4x4PlusJigsaw): bo
 
 export type TileInnerCorner = "tl" | "tr" | "bl" | "br";
 
-export type JigsawTileGrid = Tile4x4PlusJigsaw[][];
+export type CombosTileGrid = Tile4x4PlusCombos[][];
 
 export type TilesetChangedCallback = () => void;
 
@@ -39,7 +39,7 @@ export function colorsMatch(a: RGBA, b: RGBA): boolean {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
 }
 
-export type TilesetEditorTool = PencilTool | JigsawTileTool;
+export type TilesetEditorTool = PencilTool | CombosTileTool;
 
 export type TerrainTile = number;
 export type TerrainTileGrid = TerrainTile[][];
@@ -72,7 +72,7 @@ export const GODOT_NEIGHBORS: TileNeighborGrid = [
   [0b1_0000_0000,   0b1_0100_0000, 0b1_0101_0000, 0b1_0001_0000,   0b1_1111_0010, 0b1_1101_1000, 0b1_1101_0001, 0b1_1111_0100,   0b1_1100_1000, 0b1_1101_1001, 0b1_1111_1001, 0b1_1001_0001],
 ];
 
-export const GODOT_TILES: JigsawTileGrid = [
+export const GODOT_TILES: CombosTileGrid = [
   [
     { sourcePosition: { x: 0, y: 0 }, innerCorners: [] },
 

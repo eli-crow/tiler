@@ -6,7 +6,7 @@ import {
   GODOT_TILES,
   TileNeighborGrid,
   Tileset4x4Plus,
-  Tileset4x4PlusJigsaw,
+  Tileset4x4PlusCombos,
   TilesetEditor,
   TilesetTerrain,
   TOOL_INSTANCES,
@@ -26,13 +26,13 @@ export function PlaygroundPage({ backAction }: PlaygroundPageProps) {
       return null;
     }
 
-    const sourceTilesets: Tileset4x4PlusJigsaw[] = [];
+    const sourceTilesets: Tileset4x4PlusCombos[] = [];
     const sourceNeighbors: TileNeighborGrid[] = [];
     state.documents.forEach((doc) => {
       const tileset = new Tileset4x4Plus();
       tileset.putSourceImageData(doc.imageData);
-      const tilesetJigsaw = new Tileset4x4PlusJigsaw(tileset, GODOT_TILES);
-      sourceTilesets.push(tilesetJigsaw);
+      const tilesetCombos = new Tileset4x4PlusCombos(tileset, GODOT_TILES);
+      sourceTilesets.push(tilesetCombos);
       sourceNeighbors.push(GODOT_NEIGHBORS);
     });
     const tilesetTerrain = new TilesetTerrain(sourceTilesets, sourceNeighbors, 16, 16);

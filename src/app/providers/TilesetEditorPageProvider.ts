@@ -6,7 +6,7 @@ import {
   GODOT_TILES,
   RGBA,
   Tileset4x4Plus,
-  Tileset4x4PlusJigsaw,
+  Tileset4x4PlusCombos,
   TilesetEditor,
   TilesetTerrain,
   Tool,
@@ -28,17 +28,17 @@ export function useTilesetEditorPageContext() {
   return tileset;
 }
 
-export type TilesetEditorPageMode = "raw" | "jigsaw" | "terrain";
+export type TilesetEditorPageMode = "raw" | "Combos" | "terrain";
 export type TilesetEditorPageContext = ReturnType<typeof useTilesetEditorPageState>;
 
 export function useTilesetEditorPageState() {
   const [doc, setDoc] = useState<TilesetDocument | null>(null);
 
   const tileset4x4Plus = useMemo(() => new Tileset4x4Plus(), []);
-  const tileset4x4PlusJigsaw = useMemo(() => new Tileset4x4PlusJigsaw(tileset4x4Plus, GODOT_TILES), [tileset4x4Plus]);
+  const tileset4x4PlusCombos = useMemo(() => new Tileset4x4PlusCombos(tileset4x4Plus, GODOT_TILES), [tileset4x4Plus]);
   const tileset4x4PlusTerrain = useMemo(
-    () => new TilesetTerrain([tileset4x4PlusJigsaw], [GODOT_NEIGHBORS], 16, 16),
-    [tileset4x4PlusJigsaw]
+    () => new TilesetTerrain([tileset4x4PlusCombos], [GODOT_NEIGHBORS], 16, 16),
+    [tileset4x4PlusCombos]
   );
   const editor = useMemo<TilesetEditor<BaseTileset>>(
     () => new TilesetEditor(tileset4x4Plus, TOOL_INSTANCES.pencil),
@@ -49,8 +49,8 @@ export function useTilesetEditorPageState() {
   let tileset: BaseTileset;
   if (mode === "raw") {
     tileset = tileset4x4Plus;
-  } else if (mode === "jigsaw") {
-    tileset = tileset4x4PlusJigsaw;
+  } else if (mode === "Combos") {
+    tileset = tileset4x4PlusCombos;
   } else if (mode === "terrain") {
     tileset = tileset4x4PlusTerrain;
   } else {

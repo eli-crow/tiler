@@ -17,7 +17,7 @@ export function TilesetEditorTopbar({ backAction }: TilesetEditorTopbarProps) {
         <button className={classes.mode} aria-current={page.mode === "raw"} onClick={() => page.setMode("raw")}>
           Tileset
         </button>
-        <button className={classes.mode} aria-current={page.mode === "jigsaw"} onClick={() => page.setMode("jigsaw")}>
+        <button className={classes.mode} aria-current={page.mode === "Combos"} onClick={() => page.setMode("Combos")}>
           Combos
         </button>
         <button className={classes.mode} aria-current={page.mode === "terrain"} onClick={() => page.setMode("terrain")}>

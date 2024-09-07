@@ -1,8 +1,8 @@
-import { FillTool, JigsawTileTool, PencilTool, TerrainTileTool, Tool } from "@/editor";
+import { CombosTileTool, FillTool, PencilTool, TerrainTileTool, Tool } from "@/editor";
 
+import ToolIconCombos from "@/app/icons/tool-Combos-tile.svg?react";
 import ToolIconEraser from "@/app/icons/tool-eraser.svg?react";
 import ToolIconFill from "@/app/icons/tool-fill.svg?react";
-import ToolIconJigsaw from "@/app/icons/tool-jigsaw-tile.svg?react";
 import ToolIconPencil from "@/app/icons/tool-pencil.svg?react";
 import ToolIconTerrain from "@/app/icons/tool-terrain-tile.svg?react";
 
@@ -15,8 +15,8 @@ export function ToolIcon({ tool }: ToolIconProps) {
     return tool.erase ? <ToolIconEraser /> : <ToolIconPencil />;
   } else if (tool instanceof FillTool) {
     return <ToolIconFill />;
-  } else if (tool instanceof JigsawTileTool) {
-    return <ToolIconJigsaw />;
+  } else if (tool instanceof CombosTileTool) {
+    return <ToolIconCombos />;
   } else if (tool instanceof TerrainTileTool) {
     return <ToolIconTerrain />;
   } else {

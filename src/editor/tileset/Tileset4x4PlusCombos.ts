@@ -1,24 +1,24 @@
 import {
-  jigsawTilesMatch,
+  CombosTilesMatch,
   TilePosition,
-  type JigsawTileGrid,
+  type CombosTileGrid,
   type RGBA,
-  type Tile4x4PlusJigsaw,
+  type Tile4x4PlusCombos,
   type TileInnerCorner,
 } from "@/editor/model";
-import { SupportsJigsawTileTool } from "@/editor/tools/JigsawTileTool";
+import { SupportsCombosTileTool } from "@/editor/tools/CombosTileTool";
 import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { BaseTileset, ProxyTileset } from "./BaseTileset";
 import type { Tileset4x4Plus } from "./Tileset4x4Plus";
 
-export class Tileset4x4PlusJigsaw
+export class Tileset4x4PlusCombos
   extends BaseTileset
-  implements SupportsJigsawTileTool, SupportsPencilTool, ProxyTileset
+  implements SupportsCombosTileTool, SupportsPencilTool, ProxyTileset
 {
-  readonly tiles: JigsawTileGrid;
+  readonly tiles: CombosTileGrid;
   readonly sourceTileset: Tileset4x4Plus;
 
-  constructor(tileset: Tileset4x4Plus, tiles: JigsawTileGrid) {
+  constructor(tileset: Tileset4x4Plus, tiles: CombosTileGrid) {
     super(tileset.tileSize, tiles[0].length, tiles.length);
 
     this.tiles = tiles;
@@ -35,7 +35,7 @@ export class Tileset4x4PlusJigsaw
     return this.sourceTileset.getUniqueColors();
   }
 
-  getSourceTileImageData(tile: Tile4x4PlusJigsaw): ImageData {
+  getSourceTileImageData(tile: Tile4x4PlusCombos): ImageData {
     const data = this.sourceTileset.getTileImageData(tile.sourcePosition);
     tile.innerCorners.forEach((corner) => this.#applyInnerCorner(data, corner));
     return data;
@@ -79,13 +79,13 @@ export class Tileset4x4PlusJigsaw
     }
   }
 
-  getTile(position: TilePosition): Tile4x4PlusJigsaw | null {
+  getTile(position: TilePosition): Tile4x4PlusCombos | null {
     return this.tiles[position.y]?.[position.x] ?? null;
   }
 
-  setTile(position: TilePosition, tile: Tile4x4PlusJigsaw) {
+  setTile(position: TilePosition, tile: Tile4x4PlusCombos) {
     const existingTile = this.getTile(position);
-    if (existingTile && jigsawTilesMatch(existingTile, tile)) {
+    if (existingTile && CombosTilesMatch(existingTile, tile)) {
       return;
     }
     this.tiles[position.y][position.x] = tile;

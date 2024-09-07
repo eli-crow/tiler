@@ -2,7 +2,7 @@ import {
   flattenTileNeighborGrid,
   RGBA,
   TerrainTile,
-  Tile4x4PlusJigsaw,
+  Tile4x4PlusCombos,
   TileNeighbor,
   TileNeighborGrid,
   TilePosition,
@@ -13,7 +13,7 @@ import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { SupportsTerrainTileTool } from "@/editor/tools/TerrainTileTool";
 import { hasBits, maskedBitsMatch } from "@/shared";
 import { BaseTileset, MultiProxyTileset } from "./BaseTileset";
-import type { Tileset4x4PlusJigsaw } from "./Tileset4x4PlusJigsaw";
+import type { Tileset4x4PlusCombos } from "./Tileset4x4PlusCombos";
 
 enum Neighbor {
   Self = 1 << 8,
@@ -28,17 +28,17 @@ enum Neighbor {
   Sides = Neighbor.Top | Neighbor.Right | Neighbor.Bottom | Neighbor.Left,
 }
 
-export type Terrain<Tileset extends Tileset4x4PlusJigsaw> = {
+export type Terrain<Tileset extends Tileset4x4PlusCombos> = {
   tileset: Tileset;
   neighbors: TileNeighborGrid;
 };
 
-export type FlattenedTerrain<Tileset extends Tileset4x4PlusJigsaw> = {
+export type FlattenedTerrain<Tileset extends Tileset4x4PlusCombos> = {
   tileset: Tileset;
   neighbors: TileNeighborFlattenedGrid;
 };
 
-export class TilesetTerrain<Tileset extends Tileset4x4PlusJigsaw>
+export class TilesetTerrain<Tileset extends Tileset4x4PlusCombos>
   extends BaseTileset
   implements SupportsTerrainTileTool, SupportsPencilTool, MultiProxyTileset
 {
@@ -108,7 +108,7 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusJigsaw>
 
   #getSourceTileInfo(
     position: TilePosition
-  ): { sourcePosition: TilePosition; sourceTile: Tile4x4PlusJigsaw; sourceIndex: number } | null {
+  ): { sourcePosition: TilePosition; sourceTile: Tile4x4PlusCombos; sourceIndex: number } | null {
     if (!this.tilePositionInRange(position)) {
       return null;
     }

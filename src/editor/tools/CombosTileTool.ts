@@ -1,32 +1,32 @@
-import { Tile4x4PlusJigsaw, TilePosition } from "../model";
+import { Tile4x4PlusCombos, TilePosition } from "../model";
 import { BaseTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
-export type SupportsJigsawTileTool = {
-  setTile(position: TilePosition, tile: Tile4x4PlusJigsaw): void;
+export type SupportsCombosTileTool = {
+  setTile(position: TilePosition, tile: Tile4x4PlusCombos): void;
 };
 
-function isSupportsJigsawTileTool(value: any): value is SupportsJigsawTileTool {
+function isSupportsCombosTileTool(value: any): value is SupportsCombosTileTool {
   return typeof value.setTile === "function";
 }
 
 type ToolState = { type: "idle" } | { type: "down" } | { type: "dragging" };
 
-export class JigsawTileTool extends Tool<SupportsJigsawTileTool> {
+export class CombosTileTool extends Tool<SupportsCombosTileTool> {
   #state: ToolState = { type: "idle" };
-  #tile: Tile4x4PlusJigsaw = { sourcePosition: { x: 0, y: 0 }, innerCorners: [] };
+  #tile: Tile4x4PlusCombos = { sourcePosition: { x: 0, y: 0 }, innerCorners: [] };
 
   get tile() {
     return this.#tile;
   }
 
-  set tile(tile: Tile4x4PlusJigsaw) {
+  set tile(tile: Tile4x4PlusCombos) {
     this.#tile = tile;
     this.notifyChanged();
   }
 
-  supportsTileset<T extends BaseTileset>(tileset: T): tileset is T & SupportsJigsawTileTool {
-    return isSupportsJigsawTileTool(tileset);
+  supportsTileset<T extends BaseTileset>(tileset: T): tileset is T & SupportsCombosTileTool {
+    return isSupportsCombosTileTool(tileset);
   }
 
   onPointerDown(x: number, y: number, event: PointerEvent) {

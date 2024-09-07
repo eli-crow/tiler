@@ -9,7 +9,7 @@ import { TilesetEditorTopbar } from "./TilesetEditorTopbar";
 
 export const createNewSymbol: unique symbol = Symbol("createNew");
 
-export type TilesetEditorPageMode = "raw" | "jigsaw" | "terrain";
+export type TilesetEditorPageMode = "raw" | "Combos" | "terrain";
 
 interface TilesetEditorPageContext {
   documentId: TilesetDocument["id"] | typeof createNewSymbol;
