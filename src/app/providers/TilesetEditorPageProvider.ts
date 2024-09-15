@@ -2,7 +2,6 @@ import { createTilesetDocument4x4Plus, TilesetDocument } from "@/app/model";
 import {
   BaseTileset,
   getDefaultToolForTileset,
-  GODOT_NEIGHBORS,
   GODOT_TILES,
   RGBA,
   Tileset4x4Plus,
@@ -17,6 +16,7 @@ import sample4x4Plus from "@/editor/tileset/examples/sample4x4Plus.png";
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { IDocumentService } from "../services/IDocumentService";
 import { IndexedDBDocumentService } from "../services/IndexedDBDocumentService";
+import { createNew4x4PlusSymbol, createNewCombosSymbol } from "../views/tileset/TilesetEditorPage";
 
 const documentService: IDocumentService = IndexedDBDocumentService.instance;
 
@@ -31,18 +31,12 @@ export function useTilesetEditorPageContext() {
 export type TilesetEditorPageMode = "raw" | "Combos" | "terrain";
 export type TilesetEditorPageContext = ReturnType<typeof useTilesetEditorPageState>;
 
-export function useTilesetEditorPageState() {
-  const [doc, setDoc] = useState<TilesetDocument | null>(null);
-
+function use4x4PlusTilesets() {
   const tileset4x4Plus = useMemo(() => new Tileset4x4Plus(), []);
   const tileset4x4PlusCombos = useMemo(() => new Tileset4x4PlusCombos(tileset4x4Plus, GODOT_TILES), [tileset4x4Plus]);
   const tileset4x4PlusTerrain = useMemo(
-    () => new TilesetTerrain([tileset4x4PlusCombos], [GODOT_NEIGHBORS], 16, 16),
+    () => new TilesetTerrain([tileset4x4PlusCombos], 16, 16),
     [tileset4x4PlusCombos]
-  );
-  const editor = useMemo<TilesetEditor<BaseTileset>>(
-    () => new TilesetEditor(tileset4x4Plus, TOOL_INSTANCES.pencil),
-    [tileset4x4Plus]
   );
 
   const [mode, setMode] = useState<TilesetEditorPageMode>("raw");
@@ -56,6 +50,24 @@ export function useTilesetEditorPageState() {
   } else {
     throw new Error(`Invalid editor mode: ${mode}`);
   }
+
+  return {
+    tileset,
+    mode,
+    setMode,
+  };
+}
+
+export function useTilesetEditorPageState(
+  init: TilesetDocument["id"] | typeof createNew4x4PlusSymbol | typeof createNewCombosSymbol
+) {
+  const [doc, setDoc] = useState<TilesetDocument | null>(null);
+
+  const { tileset, mode, setMode } = use4x4PlusTilesets();
+  const editor = useMemo<TilesetEditor<BaseTileset>>(
+    () => new TilesetEditor(tileset, TOOL_INSTANCES.pencil),
+    [tileset]
+  );
 
   const [showTileGuides, setShowTileGuides] = useState(editor.showTileGuides);
   const [color, setColor] = useState<RGBA>(editor.color);

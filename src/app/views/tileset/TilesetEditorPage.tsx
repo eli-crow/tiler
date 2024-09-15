@@ -7,23 +7,23 @@ import { TilesetEditorToolbar } from "./TilesetEditorToolbar";
 import { TilesetEditorToolSettings } from "./TilesetEditorToolSettings";
 import { TilesetEditorTopbar } from "./TilesetEditorTopbar";
 
-export const createNewSymbol: unique symbol = Symbol("createNew");
+export const createNew4x4PlusSymbol = Symbol("createNew");
+export const createNewCombosSymbol = Symbol("createNewCombos");
 
 export type TilesetEditorPageMode = "raw" | "Combos" | "terrain";
 
 interface TilesetEditorPageContext {
-  documentId: TilesetDocument["id"] | typeof createNewSymbol;
+  documentId: TilesetDocument["id"] | typeof createNew4x4PlusSymbol | typeof createNewCombosSymbol;
   backAction?: () => void;
 }
 
 export function TilesetEditorPage({ backAction, documentId }: TilesetEditorPageContext) {
-  const context = useTilesetEditorPageState();
+  const context = useTilesetEditorPageState(documentId);
 
   useEffect(() => {
     if (typeof documentId === "string") {
       context.loadTilesetDocument(documentId);
-    }
-    if (documentId === createNewSymbol) {
+    } else if (documentId === createNew4x4PlusSymbol) {
       context.initExampleTilesetDocument();
     }
   }, []);

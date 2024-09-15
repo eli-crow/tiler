@@ -2,15 +2,14 @@ import { TilesetEditorView } from "@/app/components/TilesetEditorView";
 import { Topbar } from "@/app/components/Topbar";
 import { useDocumentsState } from "@/app/providers/DocumentsProvider";
 import {
-  GODOT_NEIGHBORS,
   GODOT_TILES,
-  TileNeighborGrid,
   Tileset4x4Plus,
   Tileset4x4PlusCombos,
   TilesetEditor,
   TilesetTerrain,
   TOOL_INSTANCES,
 } from "@/editor";
+import { ITilesetCombos } from "@/editor/tileset/ITilesetCombos";
 import { useMemo } from "react";
 import classes from "./PlaygroundPage.module.css";
 
@@ -26,16 +25,14 @@ export function PlaygroundPage({ backAction }: PlaygroundPageProps) {
       return null;
     }
 
-    const sourceTilesets: Tileset4x4PlusCombos[] = [];
-    const sourceNeighbors: TileNeighborGrid[] = [];
+    const sourceTilesets: ITilesetCombos[] = [];
     state.documents.forEach((doc) => {
       const tileset = new Tileset4x4Plus();
       tileset.putSourceImageData(doc.imageData);
       const tilesetCombos = new Tileset4x4PlusCombos(tileset, GODOT_TILES);
       sourceTilesets.push(tilesetCombos);
-      sourceNeighbors.push(GODOT_NEIGHBORS);
     });
-    const tilesetTerrain = new TilesetTerrain(sourceTilesets, sourceNeighbors, 16, 16);
+    const tilesetTerrain = new TilesetTerrain(sourceTilesets, 16, 16);
     const editor = new TilesetEditor(tilesetTerrain, TOOL_INSTANCES.pencil);
     return editor;
   }, [state.loading]);

@@ -1,10 +1,10 @@
 import {
-  flattenTileNeighborGrid,
+  CombosTile,
+  Neighbor,
   RGBA,
   TerrainTile,
-  Tile4x4PlusCombos,
-  TileNeighbor,
   TileNeighborGrid,
+  TileNeighbors,
   TilePosition,
   type TerrainTileGrid,
   type TileNeighborFlattenedGrid,
@@ -13,20 +13,8 @@ import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { SupportsTerrainTileTool } from "@/editor/tools/TerrainTileTool";
 import { hasBits, maskedBitsMatch } from "@/shared";
 import { BaseTileset, MultiProxyTileset } from "./BaseTileset";
+import { ITilesetCombos } from "./ITilesetCombos";
 import type { Tileset4x4PlusCombos } from "./Tileset4x4PlusCombos";
-
-enum Neighbor {
-  Self = 1 << 8,
-  Top = 1 << 7,
-  Right = 1 << 6,
-  Bottom = 1 << 5,
-  Left = 1 << 4,
-  TopRight = 1 << 3,
-  BottomRight = 1 << 2,
-  BottomLeft = 1 << 1,
-  TopLeft = 1 << 0,
-  Sides = Neighbor.Top | Neighbor.Right | Neighbor.Bottom | Neighbor.Left,
-}
 
 export type Terrain<Tileset extends Tileset4x4PlusCombos> = {
   tileset: Tileset;
@@ -38,15 +26,14 @@ export type FlattenedTerrain<Tileset extends Tileset4x4PlusCombos> = {
   neighbors: TileNeighborFlattenedGrid;
 };
 
-export class TilesetTerrain<Tileset extends Tileset4x4PlusCombos>
+export class TilesetTerrain<Tileset extends ITilesetCombos>
   extends BaseTileset
   implements SupportsTerrainTileTool, SupportsPencilTool, MultiProxyTileset
 {
   #tiles: TerrainTileGrid;
   readonly sourceTilesets: Tileset[];
-  readonly #sourceNeighbors: TileNeighborFlattenedGrid[];
 
-  constructor(sourceTilesets: Tileset[], sourceNeighbors: TileNeighborGrid[], columns: number, rows: number) {
+  constructor(sourceTilesets: Tileset[], columns: number, rows: number) {
     const tileSize = sourceTilesets[0].tileSize;
     if (!sourceTilesets.every((tileset) => tileset.tileSize === tileSize)) {
       throw new Error("Tilesets must all have the same tile size");
@@ -57,7 +44,6 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusCombos>
     this.#tiles = Array.from({ length: rows }, () => Array.from({ length: columns }, () => -1));
     this.sourceTilesets = sourceTilesets;
     this.sourceTilesets.forEach((tileset) => tileset.on("dataChanged", this.#handleSourceTilesetChanged));
-    this.#sourceNeighbors = sourceNeighbors.map(flattenTileNeighborGrid);
 
     this.randomize();
     this.invalidate();
@@ -108,7 +94,7 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusCombos>
 
   #getSourceTileInfo(
     position: TilePosition
-  ): { sourcePosition: TilePosition; sourceTile: Tile4x4PlusCombos; sourceIndex: number } | null {
+  ): { sourcePosition: TilePosition; sourceTile: CombosTile; sourceIndex: number } | null {
     if (!this.tilePositionInRange(position)) {
       return null;
     }
@@ -128,30 +114,31 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusCombos>
       return null;
     }
 
-    const nomatch = (sourceNeighbors: TileNeighbor, bit: number) => {
+    const nomatch = (sourceNeighbors: TileNeighbors, bit: number) => {
       return !maskedBitsMatch(sourceNeighbors, targetNeighbors, bit);
     };
 
+    const sourceTiles = this.sourceTilesets[sourceIndex].tiles;
     let sourcePosition: TilePosition | null = null;
-    for (const { x, y, neighbors: s } of this.#sourceNeighbors[sourceIndex]) {
-      if (nomatch(s, Neighbor.Sides)) continue;
+    let sourceTile: CombosTile | null = null;
+    rows: for (let y = 0; y < sourceTiles.length; y++) {
+      const row = sourceTiles[y];
+      for (let x = 0; x < row.length; x++) {
+        const tile = row[x];
 
-      if (check_tr && nomatch(s, Neighbor.TopRight)) continue;
-      if (check_br && nomatch(s, Neighbor.BottomRight)) continue;
-      if (check_bl && nomatch(s, Neighbor.BottomLeft)) continue;
-      if (check_tl && nomatch(s, Neighbor.TopLeft)) continue;
+        if (nomatch(tile.neighbors, Neighbor.Sides)) continue;
+        if (check_tr && nomatch(tile.neighbors, Neighbor.TopRight)) continue;
+        if (check_br && nomatch(tile.neighbors, Neighbor.BottomRight)) continue;
+        if (check_bl && nomatch(tile.neighbors, Neighbor.BottomLeft)) continue;
+        if (check_tl && nomatch(tile.neighbors, Neighbor.TopLeft)) continue;
 
-      sourcePosition = { x, y };
-      break;
+        sourcePosition = { x, y };
+        sourceTile = tile;
+        break rows;
+      }
     }
 
-    if (!sourcePosition) {
-      return null;
-    }
-
-    const sourceTileset = this.sourceTilesets[sourceIndex];
-    const sourceTile = sourceTileset.getTile(sourcePosition);
-    if (!sourceTile) {
+    if (!sourcePosition || !sourceTile) {
       return null;
     }
 
@@ -187,9 +174,11 @@ export class TilesetTerrain<Tileset extends Tileset4x4PlusCombos>
         if (!sourceTileInfo) {
           return;
         }
-        const { sourceTile, sourceIndex } = sourceTileInfo;
+        const { sourceIndex, sourcePosition } = sourceTileInfo;
         const sourceTileset = this.sourceTilesets[sourceIndex];
-        const sourceImageData = sourceTileset.getSourceTileImageData(sourceTile);
+        const sourceImageData = sourceTileset.getTileImageData(sourcePosition);
+        if (sourceImageData === null) return;
+
         const targetX = targetTileX * this.tileSize;
         const targetY = targetTileY * this.tileSize;
         this.context.putImageData(sourceImageData, targetX, targetY);

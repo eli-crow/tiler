@@ -9,6 +9,7 @@ type Document = {
 export type TilesetDocument = Document & {
   id: string;
   type: "tileset";
+  tilesetType: string;
   imageData: ImageData;
 };
 
@@ -64,6 +65,22 @@ export function createTilesetDocument4x4Plus(): Tileset4x4PlusDocument {
     type: "tileset",
     name: "Untitled",
     tilesetType: "4x4Plus",
+    imageData: new ImageData(1, 1),
+  };
+}
+
+export type TilesetCombosDocument = TilesetDocument & {
+  version: 1;
+  tilesetType: "combos";
+};
+
+export function createTilesetDocumentCombos(): TilesetCombosDocument {
+  return {
+    id: uuid(),
+    version: 1,
+    type: "tileset",
+    name: "Untitled",
+    tilesetType: "combos",
     imageData: new ImageData(1, 1),
   };
 }

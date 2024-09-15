@@ -5,7 +5,7 @@ import classes from "./DocumentsPage.module.css";
 
 interface DocumentInfoProps {
   onRequestNavigate: (tilesetId: TilesetDocument["id"]) => void;
-  onNewDocument: () => void;
+  onNewDocument: (type: TilesetDocument["tilesetType"]) => void;
   onPlayground: () => void;
 }
 
@@ -40,8 +40,11 @@ export function DocumentsPage({ onRequestNavigate, onNewDocument, onPlayground }
               </button>
             </article>
           ))}
-          <button className={classes.newDocument} onClick={() => onNewDocument()}>
-            New Tileset
+          <button className={classes.newDocument} onClick={() => onNewDocument("4x4Plus")}>
+            New "4x4Plus" Tileset
+          </button>
+          <button className={classes.newDocument} onClick={() => onNewDocument("combos")}>
+            New "Combos" Tileset
           </button>
         </div>
       </DocumentInfoProvider>

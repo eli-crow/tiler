@@ -25,6 +25,8 @@ export function isMultiProxyTileset(tileset: any): tileset is MultiProxyTileset 
   return tileset instanceof BaseTileset && "sourceTilesets" in tileset;
 }
 
+export type IBaseTileset = InstanceType<typeof BaseTileset>;
+
 export abstract class BaseTileset implements SupportsPencilTool, SupportsFillTool {
   readonly #canvas: OffscreenCanvas;
   protected readonly context: OffscreenCanvasRenderingContext2D;
@@ -104,7 +106,8 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     }
   }
 
-  getTileImageData(tilePosition: TilePosition): ImageData {
+  getTileImageData(tilePosition: TilePosition): ImageData | null {
+    if (!this.tilePositionInRange(tilePosition)) return null;
     const size = this.tileSize;
     const x = tilePosition.x * size;
     const y = tilePosition.y * size;

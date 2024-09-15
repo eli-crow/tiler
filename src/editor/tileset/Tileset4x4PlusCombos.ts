@@ -1,24 +1,23 @@
 import {
-  CombosTilesMatch,
+  CombosTile,
+  CombosTileGrid,
+  combosTilesMatch,
+  ProxyTile,
   TilePosition,
-  type CombosTileGrid,
   type RGBA,
-  type Tile4x4PlusCombos,
   type TileInnerCorner,
 } from "@/editor/model";
-import { SupportsCombosTileTool } from "@/editor/tools/CombosTileTool";
-import { SupportsPencilTool } from "@/editor/tools/PencilTool";
+import { SupportsPencilTool } from "../tools";
 import { BaseTileset, ProxyTileset } from "./BaseTileset";
 import type { Tileset4x4Plus } from "./Tileset4x4Plus";
 
-export class Tileset4x4PlusCombos
-  extends BaseTileset
-  implements SupportsCombosTileTool, SupportsPencilTool, ProxyTileset
-{
-  readonly tiles: CombosTileGrid;
+export type Tile4x4PlusCombos = CombosTile & ProxyTile & { innerCorners: readonly TileInnerCorner[] };
+
+export class Tileset4x4PlusCombos extends BaseTileset implements SupportsPencilTool, ProxyTileset {
+  readonly tiles: CombosTileGrid<Tile4x4PlusCombos>;
   readonly sourceTileset: Tileset4x4Plus;
 
-  constructor(tileset: Tileset4x4Plus, tiles: CombosTileGrid) {
+  constructor(tileset: Tileset4x4Plus, tiles: CombosTileGrid<Tile4x4PlusCombos>) {
     super(tileset.tileSize, tiles[0].length, tiles.length);
 
     this.tiles = tiles;
@@ -26,17 +25,13 @@ export class Tileset4x4PlusCombos
     this.sourceTileset.on("dataChanged", this.#handleTilesetDataChanged);
   }
 
-  invalidate() {
-    this.sourceTileset.invalidate();
-    this.emit("dataChanged");
-  }
+  getTileImageData(position: TilePosition): ImageData | null {
+    const tile = this.getTile(position);
+    if (tile === null) return null;
 
-  getUniqueColors() {
-    return this.sourceTileset.getUniqueColors();
-  }
-
-  getSourceTileImageData(tile: Tile4x4PlusCombos): ImageData {
     const data = this.sourceTileset.getTileImageData(tile.sourcePosition);
+    if (data === null) return null;
+
     tile.innerCorners.forEach((corner) => this.#applyInnerCorner(data, corner));
     return data;
   }
@@ -85,7 +80,7 @@ export class Tileset4x4PlusCombos
 
   setTile(position: TilePosition, tile: Tile4x4PlusCombos) {
     const existingTile = this.getTile(position);
-    if (existingTile && CombosTilesMatch(existingTile, tile)) {
+    if (existingTile && combosTilesMatch(existingTile, tile)) {
       return;
     }
     this.tiles[position.y][position.x] = tile;
@@ -93,11 +88,12 @@ export class Tileset4x4PlusCombos
 
   #draw() {
     this.context.clearRect(0, 0, this.width, this.height);
-    this.tiles.forEach((row, targetTileX) => {
-      row.forEach((tile, targetTileY) => {
-        const sourceImageData = this.getSourceTileImageData(tile);
-        const targetX = targetTileY * this.tileSize;
-        const targetY = targetTileX * this.tileSize;
+    this.tiles.forEach((row, targetTileY) => {
+      row.forEach((_tile, targetTileX) => {
+        const sourceImageData = this.getTileImageData({ x: targetTileX, y: targetTileY });
+        if (!sourceImageData) return;
+        const targetX = targetTileX * this.tileSize;
+        const targetY = targetTileY * this.tileSize;
         this.context.putImageData(sourceImageData, targetX, targetY);
       });
     });
