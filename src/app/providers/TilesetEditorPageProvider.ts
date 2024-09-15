@@ -16,7 +16,6 @@ import sample4x4Plus from "@/editor/tileset/examples/sample4x4Plus.png";
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
 import { IDocumentService } from "../services/IDocumentService";
 import { IndexedDBDocumentService } from "../services/IndexedDBDocumentService";
-import { createNew4x4PlusSymbol, createNewCombosSymbol } from "../views/tileset/TilesetEditorPage";
 
 const documentService: IDocumentService = IndexedDBDocumentService.instance;
 
@@ -58,9 +57,7 @@ function use4x4PlusTilesets() {
   };
 }
 
-export function useTilesetEditorPageState(
-  init: TilesetDocument["id"] | typeof createNew4x4PlusSymbol | typeof createNewCombosSymbol
-) {
+export function useTilesetEditorPageState() {
   const [doc, setDoc] = useState<TilesetDocument | null>(null);
 
   const { tileset, mode, setMode } = use4x4PlusTilesets();
