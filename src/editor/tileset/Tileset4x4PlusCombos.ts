@@ -18,7 +18,7 @@ export class Tileset4x4PlusCombos extends BaseTileset implements SupportsPencilT
   readonly sourceTileset: Tileset4x4Plus;
 
   constructor(tileset: Tileset4x4Plus, tiles: CombosTileGrid<Tile4x4PlusCombos>) {
-    super(tileset.tileSize, tiles[0].length, tiles.length);
+    super(tileset.tileSize, tiles[0].length, tiles.length, "Combos");
 
     this.tiles = tiles;
     this.sourceTileset = tileset;

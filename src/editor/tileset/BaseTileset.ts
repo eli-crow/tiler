@@ -28,6 +28,7 @@ export function isMultiProxyTileset(tileset: any): tileset is MultiProxyTileset 
 export type IBaseTileset = InstanceType<typeof BaseTileset>;
 
 export abstract class BaseTileset implements SupportsPencilTool, SupportsFillTool {
+  readonly name: string;
   readonly #canvas: OffscreenCanvas;
   protected readonly context: OffscreenCanvasRenderingContext2D;
   readonly tileSize: number;
@@ -51,10 +52,11 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     return this.#canvas;
   }
 
-  constructor(tileSize: number, tileColumns: number, tileRows: number) {
+  constructor(tileSize: number, tileColumns: number, tileRows: number, name: string) {
     this.tileSize = tileSize;
     this.tileColumns = tileColumns;
     this.tileRows = tileRows;
+    this.name = name;
 
     this.#canvas = new OffscreenCanvas(this.tileSize * this.tileColumns, this.tileSize * this.tileRows);
 
@@ -83,6 +85,18 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     this.setPixel(x, y, color);
   }
 
+  setSourceData(data: ImageData) {
+    if (isProxyTileset(this)) {
+      this.sourceTileset.setSourceData(data);
+    } else if (isMultiProxyTileset(this)) {
+      if (this.sourceTilesets.length !== 1)
+        throw new Error("Cannot set source data on a MultiProxyTileset with multiple sources");
+      this.sourceTilesets[0].setSourceData(data);
+    } else {
+      this.context.putImageData(data, 0, 0);
+    }
+  }
+
   setSourceDataFromImageUrlAsync(url: string) {
     return new Promise<void>((resolve) => {
       const image = new Image();
@@ -98,7 +112,8 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     if (isProxyTileset(this)) {
       this.sourceTileset.setSourceDataFromImageSource(image);
     } else if (isMultiProxyTileset(this)) {
-      if (this.sourceTilesets.length !== 1) throw new Error("Cannot set source data from image on a MultiProxyTileset");
+      if (this.sourceTilesets.length !== 1)
+        throw new Error("Cannot set source data from image on a MultiProxyTileset with multiple sources");
       this.sourceTilesets[0].setSourceDataFromImageSource(image);
     } else {
       this.context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);

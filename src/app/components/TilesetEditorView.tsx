@@ -1,5 +1,5 @@
 import { usePasteImageSourceCallback } from "@/app/hooks/usePasteImage";
-import { useTilesetEditor } from "@/app/providers/TilesetEditorPageProvider";
+import { useTilesetEditor } from "@/app/providers/TilesetEditorProvider";
 import { TilesetEditor } from "@/editor";
 import { useEffect, useState } from "react";
 import classes from "./TilesetEditorView.module.css";

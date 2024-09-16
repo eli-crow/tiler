@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { imageURLFromImageData, TilesetDocument } from "../model";
-import { IndexedDBDocumentService } from "../services/IndexedDBDocumentService";
-
-const service = IndexedDBDocumentService.instance;
+import { Services } from "../services/Services";
 
 type DocumentsContext = ReturnType<typeof useDocumentsState>;
 
@@ -19,15 +17,16 @@ export function useDocumentsState() {
 
   useEffect(() => {
     const handleChange = () => {
-      service.getAllDocuments().then((docs) => {
+      Services.documents.getAllDocuments().then((docs) => {
         setDocuments(docs);
         setLoading(false);
       });
     };
-    service.on("changed", () => {
-      service.getAllDocuments().then(handleChange);
-    });
-    service.getAllDocuments().then(handleChange);
+    Services.documents.on("changed", handleChange);
+    Services.documents.getAllDocuments().then(handleChange);
+    return () => {
+      Services.documents.off("changed", handleChange);
+    };
   }, []);
 
   const documentsWithImageURL = documents.map((doc) => {
@@ -36,7 +35,7 @@ export function useDocumentsState() {
   });
 
   function deleteDocument(id: TilesetDocument["id"]) {
-    service.deleteTilesetDocument(id);
+    Services.documents.deleteTilesetDocument(id);
   }
 
   return { documents: documentsWithImageURL, deleteDocument, loading };

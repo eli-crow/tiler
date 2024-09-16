@@ -1,12 +1,12 @@
 import { ToolIcon } from "@/app/components/ToolIcon";
-import { useTilesetEditorPageContext } from "@/app/providers/TilesetEditorPageProvider";
+import { useTilesetEditorContext } from "@/app/providers/TilesetEditorProvider";
 import { PencilTool } from "@/editor";
 import { mergeClasses } from "@/shared";
 import { PencilEditor } from "./PencilEditor";
 import classes from "./TilesetEditorToolbar.module.css";
 
 export function TilesetEditorToolbar() {
-  const page = useTilesetEditorPageContext();
+  const page = useTilesetEditorContext();
   return (
     <div className={mergeClasses(classes.root, "surface-translucent")}>
       <div className={classes.toolGroup}>

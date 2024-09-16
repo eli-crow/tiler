@@ -1,14 +1,17 @@
 import { TilesetDocument } from "@/app/model";
-import { TilesetEditorPageProvider, useTilesetEditorPageState } from "@/app/providers/TilesetEditorPageProvider";
-import { useEffect } from "react";
+import {
+  createNew4x4PlusSymbol,
+  createNewCombosSymbol,
+  TilesetDocumentProvider,
+  useTilesetDocumentState,
+} from "@/app/providers/TilesetDocumentProvider";
+import { TilesetEditorProvider, useTilesetEditorState } from "@/app/providers/TilesetEditorProvider";
+import { TilesetsProvider, useTilesetsState } from "@/app/providers/TilesetsProvider";
 import { TilesetEditorView } from "../../components/TilesetEditorView";
 import classes from "./TilesetEditorPage.module.css";
 import { TilesetEditorToolbar } from "./TilesetEditorToolbar";
 import { TilesetEditorToolSettings } from "./TilesetEditorToolSettings";
 import { TilesetEditorTopbar } from "./TilesetEditorTopbar";
-
-export const createNew4x4PlusSymbol = Symbol("createNew");
-export const createNewCombosSymbol = Symbol("createNewCombos");
 
 export type TilesetEditorPageMode = "raw" | "Combos" | "terrain";
 
@@ -18,24 +21,33 @@ interface TilesetEditorPageContext {
 }
 
 export function TilesetEditorPage({ backAction, documentId }: TilesetEditorPageContext) {
-  const context = useTilesetEditorPageState(documentId);
-
-  useEffect(() => {
-    if (typeof documentId === "string") {
-      context.loadTilesetDocument(documentId);
-    } else if (documentId === createNew4x4PlusSymbol) {
-      context.initExampleTilesetDocument();
-    }
-  }, []);
+  const docState = useTilesetDocumentState(documentId);
 
   return (
     <div className={classes.root}>
-      <TilesetEditorPageProvider value={context}>
+      <TilesetDocumentProvider value={docState}>
+        {docState.doc && <TilesetEditorPageInner doc={docState.doc} backAction={backAction} />}
+      </TilesetDocumentProvider>
+    </div>
+  );
+}
+
+interface TilesetEditorPageInnerProps {
+  doc: TilesetDocument;
+  backAction?: () => void;
+}
+
+function TilesetEditorPageInner({ doc, backAction }: TilesetEditorPageInnerProps) {
+  const tilesetsState = useTilesetsState(doc);
+  const editorState = useTilesetEditorState(tilesetsState.tileset);
+  return (
+    <TilesetsProvider value={tilesetsState}>
+      <TilesetEditorProvider value={editorState}>
         <TilesetEditorTopbar backAction={backAction} />
         <TilesetEditorView />
         <TilesetEditorToolSettings />
         <TilesetEditorToolbar />
-      </TilesetEditorPageProvider>
-    </div>
+      </TilesetEditorProvider>
+    </TilesetsProvider>
   );
 }

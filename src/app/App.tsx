@@ -1,8 +1,9 @@
 import { useState } from "react";
 import type { TilesetDocument } from "./model";
+import { createNew4x4PlusSymbol, createNewCombosSymbol } from "./providers/TilesetDocumentProvider";
 import { DocumentsPage } from "./views/documents/DocumentsPage";
 import { PlaygroundPage } from "./views/documents/PlaygroundPage";
-import { createNew4x4PlusSymbol, createNewCombosSymbol, TilesetEditorPage } from "./views/tileset/TilesetEditorPage";
+import { TilesetEditorPage } from "./views/tileset/TilesetEditorPage";
 
 const playgroundSymbol = Symbol("playground");
 

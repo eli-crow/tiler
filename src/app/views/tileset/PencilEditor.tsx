@@ -1,7 +1,7 @@
 import { IconButton } from "@/app/components/IconButton";
 import MinusIcon from "@/app/icons/minus.svg?react";
 import PlusIcon from "@/app/icons/plus.svg?react";
-import { useActiveTool } from "@/app/providers/TilesetEditorPageProvider";
+import { useActiveTool } from "@/app/providers/TilesetEditorProvider";
 import { PencilTool } from "@/editor";
 
 export function PencilEditor() {

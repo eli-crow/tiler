@@ -2,12 +2,7 @@ import { EventEmitter } from "@/editor";
 import { deserializeTilesetDocument, serializeTilesetDocument, TilesetDocument } from "../model";
 import { IDocumentService, IDocumentServiceEvents } from "./IDocumentService";
 
-const DB_NAME = "tiler";
-const DB_STORE_NAME = "documents";
-
 export class IndexedDBDocumentService implements IDocumentService {
-  static readonly instance = new IndexedDBDocumentService(DB_NAME, DB_STORE_NAME);
-
   readonly #dbName: string;
   readonly #storeName: string;
   #db!: IDBDatabase;

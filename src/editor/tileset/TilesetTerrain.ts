@@ -39,7 +39,7 @@ export class TilesetTerrain<Tileset extends ITilesetCombos>
       throw new Error("Tilesets must all have the same tile size");
     }
 
-    super(tileSize, columns, rows);
+    super(tileSize, columns, rows, "Playground");
 
     this.#tiles = Array.from({ length: rows }, () => Array.from({ length: columns }, () => -1));
     this.sourceTilesets = sourceTilesets;
