@@ -1,3 +1,4 @@
+import { GODOT_TILES, Tileset4x4Plus, Tileset4x4PlusCombos } from "@/editor";
 import { v4 as uuid } from "uuid";
 
 type Document = {
@@ -11,6 +12,11 @@ export type TilesetDocument = Document & {
   type: "tileset";
   tilesetType: string;
   imageData: ImageData;
+};
+
+export type TilesetDocumentOptions = {
+  name?: string;
+  imageData?: ImageData;
 };
 
 export type SerializedImageData = {
@@ -58,14 +64,19 @@ export type Tileset4x4PlusDocument = TilesetDocument & {
   tilesetType: "4x4Plus";
 };
 
-export function createTilesetDocument4x4Plus(): Tileset4x4PlusDocument {
+export type Tileset4x4PlusDocumentOptions = TilesetDocumentOptions;
+
+export function createTilesetDocument4x4Plus({
+  name = "Untitled",
+  imageData = new ImageData(1, 1),
+}: Tileset4x4PlusDocumentOptions = {}): Tileset4x4PlusDocument {
   return {
     id: uuid(),
     version: 1,
     type: "tileset",
-    name: "Untitled",
+    name,
     tilesetType: "4x4Plus",
-    imageData: new ImageData(1, 1),
+    imageData,
   };
 }
 
@@ -74,15 +85,43 @@ export type TilesetCombosDocument = TilesetDocument & {
   tilesetType: "combos";
 };
 
-export function createTilesetDocumentCombos(): TilesetCombosDocument {
+export type TilesetCombosDocumentOptions = TilesetDocumentOptions;
+
+export function createTilesetDocumentCombos({
+  name = "Untitled",
+  imageData = new ImageData(1, 1),
+}: TilesetCombosDocumentOptions = {}): TilesetCombosDocument {
   return {
     id: uuid(),
     version: 1,
     type: "tileset",
-    name: "Untitled",
+    name,
     tilesetType: "combos",
-    imageData: new ImageData(1, 1),
+    imageData,
   };
+}
+
+export function convertTilesetDocumentToCombos<T extends TilesetDocument>(doc: T): TilesetCombosDocument {
+  if (doc.tilesetType === "combos") {
+    return doc as TilesetCombosDocument;
+  }
+
+  if (doc.tilesetType === "4x4Plus") {
+    const tileset4x4Plus = new Tileset4x4Plus();
+    tileset4x4Plus.putSourceImageData(doc.imageData);
+    const combos = new Tileset4x4PlusCombos(tileset4x4Plus, GODOT_TILES);
+    combos.invalidate();
+    return {
+      id: doc.id,
+      version: 1,
+      type: "tileset",
+      name: doc.name,
+      tilesetType: "combos",
+      imageData: combos.getImageData(),
+    };
+  } else {
+    throw new Error(`Unsupported tileset type: ${doc.tilesetType}`);
+  }
 }
 
 function uint8ClampedArrayToBase64(bytes: Uint8ClampedArray): string {

@@ -1,5 +1,10 @@
 import { createContext, useContext, useRef, useState } from "react";
-import { createTilesetDocument4x4Plus, createTilesetDocumentCombos, TilesetDocument } from "../model";
+import {
+  convertTilesetDocumentToCombos,
+  createTilesetDocument4x4Plus,
+  createTilesetDocumentCombos,
+  TilesetDocument,
+} from "../model";
 import { Services } from "../services/Services";
 
 export const createNew4x4PlusSymbol = Symbol("createNew");
@@ -40,11 +45,18 @@ export function useTilesetDocumentState(
     setDoc({ ...doc, name });
   }
 
+  function convertToCombos() {
+    if (!doc) throw new Error("No document loaded");
+    if (doc.tilesetType === "combos") return;
+    setDoc(convertTilesetDocumentToCombos(doc));
+  }
+
   return {
     doc,
     tilesetName: doc?.name ?? "",
     setTilesetName,
     saveImageData,
+    convertToCombos,
   };
 }
 

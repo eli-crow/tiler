@@ -36,6 +36,7 @@ export function TilesetEditorTopbar({ backAction }: TilesetEditorTopbarProps) {
           <GuidesIcon />
         </IconButton>
         <button onClick={() => doc.saveImageData(tilesets.tileset.getSourceImageData())}>Save</button>
+        <button onClick={() => doc.convertToCombos()}>To Combos</button>
       </div>
     </Topbar>
   );
