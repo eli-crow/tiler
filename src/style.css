@@ -41,6 +41,7 @@
 html {
   height: 100%;
   margin: 0;
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -50,6 +51,7 @@ body {
   justify-content: center;
   margin: 0;
   overflow: hidden;
+  overscroll-behavior-x: none;
 }
 
 #root {
