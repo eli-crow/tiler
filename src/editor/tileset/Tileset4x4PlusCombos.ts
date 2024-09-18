@@ -9,11 +9,12 @@ import {
 } from "@/editor/model";
 import { SupportsPencilTool } from "../tools";
 import { BaseTileset, ProxyTileset } from "./BaseTileset";
+import { ITilesetCombos } from "./ITilesetCombos";
 import type { Tileset4x4Plus } from "./Tileset4x4Plus";
 
 export type Tile4x4PlusCombos = CombosTile & ProxyTile & { innerCorners: readonly TileInnerCorner[] };
 
-export class Tileset4x4PlusCombos extends BaseTileset implements SupportsPencilTool, ProxyTileset {
+export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos, SupportsPencilTool, ProxyTileset {
   readonly tiles: CombosTileGrid<Tile4x4PlusCombos>;
   readonly sourceTileset: Tileset4x4Plus;
 
@@ -23,6 +24,14 @@ export class Tileset4x4PlusCombos extends BaseTileset implements SupportsPencilT
     this.tiles = tiles;
     this.sourceTileset = tileset;
     this.sourceTileset.on("dataChanged", this.#handleTilesetDataChanged);
+  }
+
+  forEachTile(callback: (tile: Tile4x4PlusCombos, position: { x: number; y: number }) => void): void {
+    this.tiles.forEach((row, y) => {
+      row.forEach((tile, x) => {
+        callback(tile, { x, y });
+      });
+    });
   }
 
   getTileImageData(position: TilePosition): ImageData | null {
