@@ -4,7 +4,6 @@ import {
   RGBA,
   TerrainTile,
   TileNeighborGrid,
-  TileNeighbors,
   TilePosition,
   type TerrainTileGrid,
   type TileNeighborFlattenedGrid,
@@ -95,54 +94,35 @@ export class TilesetTerrain<Tileset extends ITilesetCombos>
   #getSourceTileInfo(
     position: TilePosition
   ): { sourcePosition: TilePosition; sourceTile: CombosTile; sourceIndex: number } | null {
-    if (!this.tilePositionInRange(position)) {
-      return null;
-    }
-
-    const targetNeighbors = this.#getTileNeighbors(position);
-    const has_t = hasBits(targetNeighbors, Neighbor.Top);
-    const has_r = hasBits(targetNeighbors, Neighbor.Right);
-    const has_b = hasBits(targetNeighbors, Neighbor.Bottom);
-    const has_l = hasBits(targetNeighbors, Neighbor.Left);
-    const check_tr = has_t && has_r;
-    const check_br = has_r && has_b;
-    const check_bl = has_b && has_l;
-    const check_tl = has_l && has_t;
+    if (!this.tilePositionInRange(position)) return null;
 
     const sourceIndex = this.getTile(position);
-    if (sourceIndex === -1 || sourceIndex === null) {
-      return null;
-    }
+    if (sourceIndex === -1 || sourceIndex === null) return null;
 
-    const nomatch = (sourceNeighbors: TileNeighbors, bit: number) => {
-      return !maskedBitsMatch(sourceNeighbors, targetNeighbors, bit);
-    };
+    const targetNeighbors = this.#getTileNeighbors(position);
+
+    let neighborsToCheck = Neighbor.Plus;
+    if (hasBits(targetNeighbors, Neighbor.Top | Neighbor.Right)) neighborsToCheck |= Neighbor.TopRight;
+    if (hasBits(targetNeighbors, Neighbor.Bottom | Neighbor.Right)) neighborsToCheck |= Neighbor.BottomRight;
+    if (hasBits(targetNeighbors, Neighbor.Bottom | Neighbor.Left)) neighborsToCheck |= Neighbor.BottomLeft;
+    if (hasBits(targetNeighbors, Neighbor.Top | Neighbor.Left)) neighborsToCheck |= Neighbor.TopLeft;
 
     const sourceTiles = this.sourceTilesets[sourceIndex].tiles;
     let sourcePosition: TilePosition | null = null;
     let sourceTile: CombosTile | null = null;
-    rows: for (let y = 0; y < sourceTiles.length; y++) {
+    for (let y = 0; y < sourceTiles.length; y++) {
       const row = sourceTiles[y];
       for (let x = 0; x < row.length; x++) {
         const tile = row[x];
-
-        if (nomatch(tile.neighbors, Neighbor.Sides)) continue;
-        if (check_tr && nomatch(tile.neighbors, Neighbor.TopRight)) continue;
-        if (check_br && nomatch(tile.neighbors, Neighbor.BottomRight)) continue;
-        if (check_bl && nomatch(tile.neighbors, Neighbor.BottomLeft)) continue;
-        if (check_tl && nomatch(tile.neighbors, Neighbor.TopLeft)) continue;
-
-        sourcePosition = { x, y };
-        sourceTile = tile;
-        break rows;
+        if (maskedBitsMatch(targetNeighbors, tile.neighbors, neighborsToCheck)) {
+          sourcePosition = { x, y };
+          sourceTile = tile;
+          return { sourcePosition, sourceTile, sourceIndex };
+        }
       }
     }
 
-    if (!sourcePosition || !sourceTile) {
-      return null;
-    }
-
-    return { sourcePosition, sourceTile, sourceIndex };
+    return null;
   }
 
   #getTileNeighbors(position: TilePosition): number {

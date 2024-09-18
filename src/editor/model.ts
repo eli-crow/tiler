@@ -46,6 +46,7 @@ export enum Neighbor {
   BottomLeft = 1 << 1,
   TopLeft = 1 << 0,
   Sides = Neighbor.Top | Neighbor.Right | Neighbor.Bottom | Neighbor.Left,
+  Plus = Neighbor.Self | Neighbor.Sides,
 }
 export type TileNeighbors = number;
 export type TileNeighborFlattened = { x: number; y: number; neighbors: number };
