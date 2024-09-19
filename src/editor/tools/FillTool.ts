@@ -1,5 +1,7 @@
 import { RGBA } from "../model";
-import { BaseTileset, isMultiProxyTileset, isProxyTileset } from "../tileset/BaseTileset";
+import { BaseTileset } from "../tileset/BaseTileset";
+import { isMultiProxyTileset } from "../tileset/IMultiProxyTileset";
+import { isProxyTileset } from "../tileset/IProxyTileset";
 import { Tool } from "./Tool";
 
 export type SupportsFillTool = {

@@ -11,7 +11,8 @@ import {
 import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { SupportsTerrainTileTool } from "@/editor/tools/TerrainTileTool";
 import { hasBits, maskedBitsMatch } from "@/shared";
-import { BaseTileset, MultiProxyTileset } from "./BaseTileset";
+import { BaseTileset } from "./BaseTileset";
+import { IMultiProxyTileset } from "./IMultiProxyTileset";
 import { ITilesetCombos } from "./ITilesetCombos";
 import type { Tileset4x4PlusCombos } from "./Tileset4x4PlusCombos";
 
@@ -27,7 +28,7 @@ export type FlattenedTerrain<Tileset extends Tileset4x4PlusCombos> = {
 
 export class TilesetTerrain<Tileset extends ITilesetCombos>
   extends BaseTileset
-  implements SupportsTerrainTileTool, SupportsPencilTool, MultiProxyTileset
+  implements SupportsTerrainTileTool, SupportsPencilTool, IMultiProxyTileset
 {
   #tiles: TerrainTileGrid;
   readonly sourceTilesets: Tileset[];

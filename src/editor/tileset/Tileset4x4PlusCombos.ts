@@ -8,13 +8,14 @@ import {
   type TileInnerCorner,
 } from "@/editor/model";
 import { SupportsPencilTool } from "../tools";
-import { BaseTileset, ProxyTileset } from "./BaseTileset";
+import { BaseTileset } from "./BaseTileset";
+import { IProxyTileset } from "./IProxyTileset";
 import { ITilesetCombos } from "./ITilesetCombos";
 import type { Tileset4x4Plus } from "./Tileset4x4Plus";
 
 export type Tile4x4PlusCombos = CombosTile & ProxyTile & { innerCorners: readonly TileInnerCorner[] };
 
-export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos, SupportsPencilTool, ProxyTileset {
+export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos, SupportsPencilTool, IProxyTileset {
   readonly tiles: CombosTileGrid<Tile4x4PlusCombos>;
   readonly sourceTileset: Tileset4x4Plus;
 
@@ -40,8 +41,26 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
 
     const data = this.sourceTileset.getTileImageData(tile.sourcePosition);
     if (data === null) return null;
-
     tile.innerCorners.forEach((corner) => this.#applyInnerCorner(data, corner));
+
+    const buffer = this.sourceTileset.getTileBufferImageData(tile.sourcePosition);
+    if (buffer === null) return data;
+    tile.innerCorners.forEach((corner) => this.#applyInnerCorner(buffer, corner, true));
+
+    // source-over buffer on top of data
+    for (let y = 0; y < this.tileSize; y++) {
+      for (let x = 0; x < this.tileSize; x++) {
+        const i = (y * this.tileSize + x) * 4;
+        const alpha = buffer.data[i + 3] / 255;
+        if (alpha === 0) continue;
+        const j = (y * this.tileSize + x) * 4;
+        data.data[j] = buffer.data[i] * alpha + data.data[j] * (1 - alpha);
+        data.data[j + 1] = buffer.data[i + 1] * alpha + data.data[j + 1] * (1 - alpha);
+        data.data[j + 2] = buffer.data[i + 2] * alpha + data.data[j + 2] * (1 - alpha);
+        data.data[j + 3] = buffer.data[i + 3];
+      }
+    }
+
     return data;
   }
 
@@ -95,7 +114,7 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     this.tiles[position.y][position.x] = tile;
   }
 
-  // TODO: drawing does not consider the source drawing buffer, so changes don't apply until the source tileset is flushed
+  // TODO: drawing does not consider the source drawing buffer, so changes don't apply until the source tileset's buffer is flushed
   #draw() {
     this.context.clearRect(0, 0, this.width, this.height);
     this.tiles.forEach((row, targetTileY) => {
@@ -120,7 +139,7 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     this.sourceTileset.setBufferPixel(x, y, color);
   }
 
-  #getInnerCornerImageData(corner: TileInnerCorner) {
+  #getInnerCornerImageData(corner: TileInnerCorner, buffer = false) {
     const size = this.tileSize;
 
     let offsetX: number;
@@ -145,12 +164,10 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     const cornerTileStartX = 4 * size;
     const cornerTileStartY = 0;
 
-    const imageData = this.sourceTileset.getImageData(
-      cornerTileStartX + offsetX,
-      cornerTileStartY + offsetY,
-      size / 2,
-      size / 2
+    const getImageData = (buffer ? this.sourceTileset.getBufferImageData : this.sourceTileset.getImageData).bind(
+      this.sourceTileset
     );
+    const imageData = getImageData(cornerTileStartX + offsetX, cornerTileStartY + offsetY, size / 2, size / 2);
 
     return {
       offsetX,
@@ -159,14 +176,18 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     };
   }
 
-  #applyInnerCorner(imageData: ImageData, innerCorner: TileInnerCorner) {
+  #applyInnerCorner(imageData: ImageData, innerCorner: TileInnerCorner, buffer = false) {
     const size = this.tileSize;
+
+    const getInnerCornerImageData = (
+      buffer ? this.#getInnerCornerImageData.bind(this) : this.#getInnerCornerImageData
+    ).bind(this);
 
     const {
       offsetX,
       offsetY,
       imageData: { data: source },
-    } = this.#getInnerCornerImageData(innerCorner);
+    } = getInnerCornerImageData(innerCorner, buffer);
 
     const { data: target } = imageData;
 

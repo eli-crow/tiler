@@ -4,25 +4,11 @@ import { SupportsFillTool } from "@/editor/tools/FillTool";
 import { SupportsPencilTool } from "@/editor/tools/PencilTool";
 import { Tool } from "@/editor/tools/Tool";
 import { SizedImageSource } from "@/shared/ClipboardService";
+import { isMultiProxyTileset } from "./IMultiProxyTileset";
+import { isProxyTileset } from "./IProxyTileset";
 
 interface Events {
   dataChanged(): void;
-}
-
-export interface ProxyTileset {
-  sourceTileset: BaseTileset;
-}
-
-export function isProxyTileset(tileset: any): tileset is ProxyTileset {
-  return tileset instanceof BaseTileset && "sourceTileset" in tileset;
-}
-
-export interface MultiProxyTileset {
-  sourceTilesets: BaseTileset[];
-}
-
-export function isMultiProxyTileset(tileset: any): tileset is MultiProxyTileset {
-  return tileset instanceof BaseTileset && "sourceTilesets" in tileset;
 }
 
 export type IBaseTileset = InstanceType<typeof BaseTileset>;
@@ -63,7 +49,6 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
 
     this.#canvas = new OffscreenCanvas(this.tileSize * this.tileColumns, this.tileSize * this.tileRows);
     this.context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true, antialias: false })!;
-    this.context.imageSmoothingEnabled = false;
 
     this.#bufferCanvas = new OffscreenCanvas(this.tileSize * this.tileColumns, this.tileSize * this.tileRows);
     this.bufferContext = this.#bufferCanvas.getContext("2d", {
@@ -134,6 +119,16 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     width ??= this.#canvas.width;
     height ??= this.#canvas.height;
     return this.context.getImageData(x, y, width, height);
+  }
+
+  getBufferImageData(): ImageData;
+  getBufferImageData(x: number, y: number, width: number, height: number): ImageData;
+  getBufferImageData(x?: number, y?: number, width?: number, height?: number): ImageData {
+    x ??= 0;
+    y ??= 0;
+    width ??= this.#bufferCanvas.width;
+    height ??= this.#bufferCanvas.height;
+    return this.bufferContext.getImageData(x, y, width, height);
   }
 
   getSourceImageData(): ImageData {
