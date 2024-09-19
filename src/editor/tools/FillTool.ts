@@ -3,12 +3,12 @@ import { BaseTileset, isMultiProxyTileset, isProxyTileset } from "../tileset/Bas
 import { Tool } from "./Tool";
 
 export type SupportsFillTool = {
-  setPixel(x: number, y: number, color: RGBA): void;
+  setBufferPixel(x: number, y: number, color: RGBA): void;
   getPixel(x: number, y: number): RGBA;
 };
 
 function isSupportsFillTool(value: any): value is SupportsFillTool {
-  return typeof value.setPixel === "function" && !isProxyTileset(value) && !isMultiProxyTileset(value);
+  return typeof value.setBufferPixel === "function" && !isProxyTileset(value) && !isMultiProxyTileset(value);
 }
 
 export class FillTool extends Tool<SupportsFillTool> {
@@ -47,7 +47,7 @@ export class FillTool extends Tool<SupportsFillTool> {
       ) {
         continue;
       }
-      tileset.setPixel(x, y, color);
+      tileset.setBufferPixel(x, y, color);
       stack.push([x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]);
     }
     tileset.invalidate();

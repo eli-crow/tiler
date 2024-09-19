@@ -47,13 +47,6 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#generateCheckerPattern();
   }
 
-  // region Events
-  readonly #emitter = new EventEmitter<Events>();
-  readonly on = this.#emitter.on.bind(this.#emitter);
-  readonly once = this.#emitter.once.bind(this.#emitter);
-  readonly off = this.#emitter.off.bind(this.#emitter);
-  protected readonly emit = this.#emitter.emit.bind(this.#emitter);
-
   // region Tileset
   #tileset!: Tileset;
   get tileset(): Tileset {
@@ -199,6 +192,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
   #drawTileset() {
     this.#context.imageSmoothingEnabled = false;
     this.#context.drawImage(this.tileset.imageSource, 0, 0);
+    this.#context.drawImage(this.tileset.bufferImageSource, 0, 0);
   }
 
   #drawTileGuides() {
@@ -445,8 +439,14 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     return this.#canvasPointToTilesetPoint(canvasPoint);
   }
 
-  // region Misc
+  // region Events
+  readonly #emitter = new EventEmitter<Events>();
+  readonly on = this.#emitter.on.bind(this.#emitter);
+  readonly once = this.#emitter.once.bind(this.#emitter);
+  readonly off = this.#emitter.off.bind(this.#emitter);
+  protected readonly emit = this.#emitter.emit.bind(this.#emitter);
 
+  // region Misc
   copyToClipboard() {
     ClipboardService.default.copyImageSource(this.tileset.imageSource);
   }

@@ -8,11 +8,11 @@ const DIAMETER_MIN = 1;
 const DIAMETER_MAX = 100;
 
 export type SupportsPencilTool = {
-  setPixel(x: number, y: number, color: RGBA): void;
+  setBufferPixel(x: number, y: number, color: RGBA): void;
 };
 
 function isSupportsPencilTool(value: any): value is SupportsPencilTool {
-  return typeof value.setPixel === "function";
+  return typeof value.setBufferPixel === "function";
 }
 
 type ToolState =
@@ -106,11 +106,12 @@ export class PencilTool extends Tool<SupportsPencilTool> {
 
   onPointerUp(_x: number, _y: number, _event: PointerEvent) {
     this.#state = { type: "idle" };
+    this.tileset.flushBuffer();
   }
 
   #drawCircle(cx: number, cy: number) {
     if (this.diameter === 1) {
-      this.tileset.setPixel(cx, cy, this.resolvedColor);
+      this.tileset.setBufferPixel(cx, cy, this.resolvedColor);
       return;
     }
 
@@ -120,7 +121,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     for (let y = -radius; y <= radius; y++) {
       for (let x = -radius; x <= radius; x++) {
         if (x ** 2 + y ** 2 <= sqRadius) {
-          this.tileset.setPixel(cx + x, cy + y, this.resolvedColor);
+          this.tileset.setBufferPixel(cx + x, cy + y, this.resolvedColor);
         }
       }
     }

@@ -1,4 +1,4 @@
-import { EventEmitter } from "@/editor/events/EventEmitter";
+import { EventEmitter, IEventEmitter } from "@/editor/events/EventEmitter";
 import type { RGBA, TilePosition } from "@/editor/model";
 import { SupportsFillTool } from "@/editor/tools/FillTool";
 import { SupportsPencilTool } from "@/editor/tools/PencilTool";
@@ -27,18 +27,17 @@ export function isMultiProxyTileset(tileset: any): tileset is MultiProxyTileset 
 
 export type IBaseTileset = InstanceType<typeof BaseTileset>;
 
-export abstract class BaseTileset implements SupportsPencilTool, SupportsFillTool {
+export abstract class BaseTileset implements SupportsPencilTool, SupportsFillTool, IEventEmitter<Events> {
   readonly name: string;
-  readonly #canvas: OffscreenCanvas;
-  protected readonly context: OffscreenCanvasRenderingContext2D;
   readonly tileSize: number;
   readonly tileColumns: number;
   readonly tileRows: number;
-  readonly #emitter = new EventEmitter<Events>();
-  readonly on: EventEmitter<Events>["on"] = this.#emitter.on.bind(this.#emitter);
-  readonly once: EventEmitter<Events>["once"] = this.#emitter.once.bind(this.#emitter);
-  readonly off: EventEmitter<Events>["off"] = this.#emitter.off.bind(this.#emitter);
-  protected readonly emit: EventEmitter<Events>["emit"] = this.#emitter.emit.bind(this.#emitter);
+
+  readonly #canvas: OffscreenCanvas;
+  protected readonly context: OffscreenCanvasRenderingContext2D;
+
+  readonly #bufferCanvas: OffscreenCanvas;
+  protected readonly bufferContext: OffscreenCanvasRenderingContext2D;
 
   get width() {
     return this.#canvas.width;
@@ -52,6 +51,10 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     return this.#canvas;
   }
 
+  get bufferImageSource(): SizedImageSource {
+    return this.#bufferCanvas;
+  }
+
   constructor(tileSize: number, tileColumns: number, tileRows: number, name: string) {
     this.tileSize = tileSize;
     this.tileColumns = tileColumns;
@@ -59,11 +62,18 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     this.name = name;
 
     this.#canvas = new OffscreenCanvas(this.tileSize * this.tileColumns, this.tileSize * this.tileRows);
-
     this.context = this.#canvas.getContext("2d", { willReadFrequently: true, alpha: true, antialias: false })!;
     this.context.imageSmoothingEnabled = false;
+
+    this.#bufferCanvas = new OffscreenCanvas(this.tileSize * this.tileColumns, this.tileSize * this.tileRows);
+    this.bufferContext = this.#bufferCanvas.getContext("2d", {
+      willReadFrequently: true,
+      alpha: true,
+      antialias: false,
+    })!;
   }
 
+  // region Tile Positions
   tilePositionInRange(tilePosition: TilePosition): boolean {
     const { x, y } = tilePosition;
     return x >= 0 && x < this.tileColumns && y >= 0 && y < this.tileRows;
@@ -78,22 +88,16 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     return { x: tileX, y: tileY };
   }
 
-  setTilePixel(position: TilePosition, offsetX: number, offsetY: number, color: RGBA) {
-    const size = this.tileSize;
-    const x = position.x * size + offsetX;
-    const y = position.y * size + offsetY;
-    this.setPixel(x, y, color);
-  }
+  // region Source Data
 
-  setSourceData(data: ImageData) {
+  putSourceImageData(imageData: ImageData) {
     if (isProxyTileset(this)) {
-      this.sourceTileset.setSourceData(data);
+      this.sourceTileset.putSourceImageData(imageData);
     } else if (isMultiProxyTileset(this)) {
-      if (this.sourceTilesets.length !== 1)
-        throw new Error("Cannot set source data on a MultiProxyTileset with multiple sources");
-      this.sourceTilesets[0].setSourceData(data);
+      if (this.sourceTilesets.length !== 1) throw new Error("Cannot put source image data on a MultiProxyTileset");
+      this.sourceTilesets[0].putSourceImageData(imageData);
     } else {
-      this.context.putImageData(data, 0, 0);
+      this.context.putImageData(imageData, 0, 0);
     }
   }
 
@@ -121,35 +125,7 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     }
   }
 
-  getTileImageData(tilePosition: TilePosition): ImageData | null {
-    if (!this.tilePositionInRange(tilePosition)) return null;
-    const size = this.tileSize;
-    const x = tilePosition.x * size;
-    const y = tilePosition.y * size;
-    const data = this.context.getImageData(x, y, size, size);
-    return data;
-  }
-
-  setPixel(x: number, y: number, color: RGBA) {
-    const imageData = this.context.createImageData(1, 1);
-    imageData.data.set(color);
-    this.context.putImageData(imageData, x, y);
-  }
-
-  getPixel(x: number, y: number): RGBA {
-    const data = this.context.getImageData(x, y, 1, 1).data;
-    return [data[0], data[1], data[2], data[3]];
-  }
-
-  invalidate() {
-    if (isProxyTileset(this)) {
-      this.sourceTileset.invalidate();
-    } else if (isMultiProxyTileset(this)) {
-      this.sourceTilesets.forEach((tileset) => tileset.invalidate());
-    }
-    this.#emitter.emit("dataChanged");
-  }
-
+  // region Read
   getImageData(): ImageData;
   getImageData(x: number, y: number, width: number, height: number): ImageData;
   getImageData(x?: number, y?: number, width?: number, height?: number): ImageData {
@@ -172,17 +148,78 @@ export abstract class BaseTileset implements SupportsPencilTool, SupportsFillToo
     }
   }
 
-  putSourceImageData(imageData: ImageData) {
+  getTileImageData(tilePosition: TilePosition): ImageData | null {
+    if (!this.tilePositionInRange(tilePosition)) return null;
+    const size = this.tileSize;
+    const x = tilePosition.x * size;
+    const y = tilePosition.y * size;
+    const data = this.context.getImageData(x, y, size, size);
+    return data;
+  }
+
+  getPixel(x: number, y: number): RGBA {
+    const data = this.context.getImageData(x, y, 1, 1).data;
+    return [data[0], data[1], data[2], data[3]];
+  }
+
+  // region Buffer
+  setBufferPixel(x: number, y: number, color: RGBA) {
+    const imageData = this.context.createImageData(1, 1);
+    imageData.data.set(color);
+    this.bufferContext.putImageData(imageData, x, y);
+  }
+
+  setTileBufferPixel(position: TilePosition, offsetX: number, offsetY: number, color: RGBA) {
+    const size = this.tileSize;
+    const x = position.x * size + offsetX;
+    const y = position.y * size + offsetY;
+    this.setBufferPixel(x, y, color);
+  }
+
+  getTileBufferImageData(tilePosition: TilePosition): ImageData | null {
+    if (!this.tilePositionInRange(tilePosition)) return null;
+    const size = this.tileSize;
+    const x = tilePosition.x * size;
+    const y = tilePosition.y * size;
+    const data = this.bufferContext.getImageData(x, y, size, size);
+    return data;
+  }
+
+  clearBuffer() {
+    this.#bufferCanvas.width = this.#bufferCanvas.width;
+  }
+
+  flushBuffer() {
     if (isProxyTileset(this)) {
-      this.sourceTileset.putSourceImageData(imageData);
+      this.sourceTileset.flushBuffer();
     } else if (isMultiProxyTileset(this)) {
-      if (this.sourceTilesets.length !== 1) throw new Error("Cannot put source image data on a MultiProxyTileset");
-      this.sourceTilesets[0].putSourceImageData(imageData);
+      this.sourceTilesets.forEach((tileset) => tileset.flushBuffer());
     } else {
-      this.context.putImageData(imageData, 0, 0);
+      this.context.drawImage(this.#bufferCanvas, 0, 0);
+      this.#bufferCanvas.width = this.#bufferCanvas.width;
+      this.#emitter.emit("dataChanged");
     }
   }
 
+  // region Drawing
+  invalidate() {
+    if (isProxyTileset(this)) {
+      this.sourceTileset.invalidate();
+    } else if (isMultiProxyTileset(this)) {
+      this.sourceTilesets.forEach((tileset) => tileset.invalidate());
+    } else {
+      this.#emitter.emit("dataChanged");
+    }
+  }
+
+  // region Events
+  readonly #emitter = new EventEmitter<Events>();
+  readonly on = this.#emitter.on.bind(this.#emitter);
+  readonly once = this.#emitter.once.bind(this.#emitter);
+  readonly off = this.#emitter.off.bind(this.#emitter);
+  protected readonly emit = this.#emitter.emit.bind(this.#emitter);
+
+  // region Misc
   getUniqueColors(): [RGBA, number][] {
     const colorCounts: Map<string, number> = new Map();
 

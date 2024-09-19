@@ -1,15 +1,10 @@
 import { usePasteImageSourceCallback } from "@/app/hooks/usePasteImage";
 import { useTilesetEditor } from "@/app/providers/TilesetEditorProvider";
-import { TilesetEditor } from "@/editor";
 import { useEffect, useState } from "react";
 import classes from "./TilesetEditorView.module.css";
 
-type TilesetEditorViewProps = {
-  editor?: TilesetEditor;
-};
-
-export function TilesetEditorView({ editor }: TilesetEditorViewProps) {
-  editor = editor ?? useTilesetEditor();
+export function TilesetEditorView() {
+  const editor = useTilesetEditor();
 
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null);
 

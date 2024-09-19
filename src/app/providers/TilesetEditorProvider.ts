@@ -1,5 +1,5 @@
 import { BaseTileset, getDefaultToolForTileset, RGBA, TilesetEditor, Tool, TOOL_INSTANCES, TOOLS } from "@/editor";
-import { createContext, useContext, useEffect, useMemo, useReducer, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 const context = createContext<TilesetEditorContext>(null as never);
 export const TilesetEditorProvider = context.Provider;
@@ -27,8 +27,10 @@ export function useTilesetEditorState(tileset: BaseTileset) {
   editor.tileset = tileset;
   editor.showTileGuides = showTileGuides;
 
-  if (!tileset.supportsTool(tool)) {
+  const lastTileset = useRef<BaseTileset | null>(null);
+  if (lastTileset.current !== tileset && !tileset.supportsTool(tool)) {
     setTool(getDefaultToolForTileset(tileset));
+    lastTileset.current = tileset;
   }
 
   return {

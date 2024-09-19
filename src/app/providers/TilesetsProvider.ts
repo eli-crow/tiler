@@ -17,7 +17,7 @@ export function useTilesetsState(doc: TilesetDocument): TilesetsState {
     switch (doc.tilesetType) {
       case "4x4Plus": {
         const raw = new Tileset4x4Plus();
-        raw.setSourceData(doc.imageData);
+        raw.putSourceImageData(doc.imageData);
         const combos = new Tileset4x4PlusCombos(raw, GODOT_TILES);
         const terrain = new TilesetTerrain([combos], 16, 16);
         return [raw, combos, terrain];
@@ -25,7 +25,7 @@ export function useTilesetsState(doc: TilesetDocument): TilesetsState {
 
       case "combos": {
         const raw = new TilesetCombos(GODOT_TILES);
-        raw.setSourceData(doc.imageData);
+        raw.putSourceImageData(doc.imageData);
 
         const terrain = new TilesetTerrain([raw], 16, 16);
         return [raw, terrain];

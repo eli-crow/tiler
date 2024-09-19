@@ -45,7 +45,7 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     return data;
   }
 
-  setPixel(x: number, y: number, color: RGBA) {
+  setBufferPixel(x: number, y: number, color: RGBA) {
     const tilePosition = this.getTilePositionAtPixel(x, y);
     if (!tilePosition) {
       return;
@@ -56,10 +56,10 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     }
     const offsetX = x % this.tileSize;
     const offsetY = y % this.tileSize;
-    this.setTilePixel(tilePosition, offsetX, offsetY, color);
+    this.setTileBufferPixel(tilePosition, offsetX, offsetY, color);
   }
 
-  setTilePixel(tilePosition: TilePosition, offsetX: number, offsetY: number, color: RGBA) {
+  setTileBufferPixel(tilePosition: TilePosition, offsetX: number, offsetY: number, color: RGBA) {
     const size = this.tileSize;
 
     const tile = this.getTile(tilePosition);
@@ -79,7 +79,7 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     ) {
       this.#setInnerCornerTilePixel(offsetX, offsetY, color);
     } else {
-      this.sourceTileset.setTilePixel(tile.sourcePosition, offsetX, offsetY, color);
+      this.sourceTileset.setTileBufferPixel(tile.sourcePosition, offsetX, offsetY, color);
     }
   }
 
@@ -95,6 +95,7 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
     this.tiles[position.y][position.x] = tile;
   }
 
+  // TODO: drawing does not consider the source drawing buffer, so changes don't apply until the source tileset is flushed
   #draw() {
     this.context.clearRect(0, 0, this.width, this.height);
     this.tiles.forEach((row, targetTileY) => {
@@ -116,7 +117,7 @@ export class Tileset4x4PlusCombos extends BaseTileset implements ITilesetCombos,
   #setInnerCornerTilePixel(offsetX: number, offsetY: number, color: RGBA) {
     const x = 4 * this.tileSize + offsetX;
     const y = 0 * this.tileSize + offsetY;
-    this.sourceTileset.setPixel(x, y, color);
+    this.sourceTileset.setBufferPixel(x, y, color);
   }
 
   #getInnerCornerImageData(corner: TileInnerCorner) {

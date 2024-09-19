@@ -1,14 +1,8 @@
 import { TilesetEditorView } from "@/app/components/TilesetEditorView";
 import { Topbar } from "@/app/components/Topbar";
 import { useDocumentsState } from "@/app/providers/DocumentsProvider";
-import {
-  GODOT_TILES,
-  Tileset4x4Plus,
-  Tileset4x4PlusCombos,
-  TilesetEditor,
-  TilesetTerrain,
-  TOOL_INSTANCES,
-} from "@/editor";
+import { TilesetEditorProvider, useTilesetEditorState } from "@/app/providers/TilesetEditorProvider";
+import { BaseTileset, GODOT_TILES, Tileset4x4Plus, Tileset4x4PlusCombos, TilesetTerrain } from "@/editor";
 import { ITilesetCombos } from "@/editor/tileset/ITilesetCombos";
 import { useMemo } from "react";
 import classes from "./PlaygroundPage.module.css";
@@ -20,7 +14,7 @@ interface PlaygroundPageProps {
 export function PlaygroundPage({ backAction }: PlaygroundPageProps) {
   const state = useDocumentsState();
 
-  const editor = useMemo(() => {
+  const tileset = useMemo(() => {
     if (state.loading) {
       return null;
     }
@@ -33,14 +27,26 @@ export function PlaygroundPage({ backAction }: PlaygroundPageProps) {
       sourceTilesets.push(tilesetCombos);
     });
     const tilesetTerrain = new TilesetTerrain(sourceTilesets, 16, 16);
-    const editor = new TilesetEditor(tilesetTerrain, TOOL_INSTANCES.pencil);
-    return editor;
+    return tilesetTerrain;
   }, [state.loading]);
 
   return (
     <div className={classes.root}>
       <Topbar title="Playground" backAction={backAction} />
-      {editor && <TilesetEditorView editor={editor} />}
+      {tileset && <PlaygroundPageInner tileset={tileset} />}
     </div>
+  );
+}
+
+interface PlaygroundPageInnerProps {
+  tileset: BaseTileset;
+}
+
+function PlaygroundPageInner({ tileset }: PlaygroundPageInnerProps) {
+  const editor = useTilesetEditorState(tileset);
+  return (
+    <TilesetEditorProvider value={editor}>
+      <TilesetEditorView />
+    </TilesetEditorProvider>
   );
 }

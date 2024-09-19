@@ -76,7 +76,7 @@ export class TilesetTerrain<Tileset extends ITilesetCombos>
     });
   }
 
-  setPixel(x: number, y: number, color: RGBA): void {
+  setBufferPixel(x: number, y: number, color: RGBA): void {
     const tilePosition = this.getTilePositionAtPixel(x, y);
     if (!tilePosition) return;
 
@@ -88,7 +88,7 @@ export class TilesetTerrain<Tileset extends ITilesetCombos>
 
     const offsetX = x % this.tileSize;
     const offsetY = y % this.tileSize;
-    this.sourceTilesets[info.sourceIndex].setTilePixel(info.sourcePosition, offsetX, offsetY, color);
+    this.sourceTilesets[info.sourceIndex].setTileBufferPixel(info.sourcePosition, offsetX, offsetY, color);
   }
 
   #getSourceTileInfo(
