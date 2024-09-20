@@ -29,6 +29,8 @@ export type ProxyTile = { sourcePosition: TilePosition };
 export type CombosTileGrid<T extends CombosTile> = T[][];
 
 export type RGBA = [r: number, g: number, b: number, a: number];
+
+export const TRANSPARENT: RGBA = [0, 0, 0, 0];
 export function colorsMatch(a: RGBA, b: RGBA): boolean {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
 }

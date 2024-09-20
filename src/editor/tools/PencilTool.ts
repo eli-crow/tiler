@@ -1,11 +1,11 @@
 import { clamp } from "@/shared";
-import { RGBA } from "../model";
+import { RGBA, TRANSPARENT } from "../model";
 import { BaseTileset } from "../tileset/BaseTileset";
 import { Tool } from "./Tool";
 
-const TRANSPARENT: RGBA = [0, 0, 0, 0];
 const DIAMETER_MIN = 1;
 const DIAMETER_MAX = 100;
+const FILL_DELAY_MS = 1_500;
 
 export type SupportsPencilTool = {
   setBufferPixel(x: number, y: number, color: RGBA): void;
@@ -16,9 +16,23 @@ function isSupportsPencilTool(value: any): value is SupportsPencilTool {
 }
 
 type ToolState =
-  | { type: "idle" }
-  | { type: "down"; downX: number; downY: number }
-  | { type: "dragging"; lastMoveX: number; lastMoveY: number };
+  | {
+      type: "idle";
+    }
+  | {
+      type: "down";
+      downX: number;
+      downY: number;
+    }
+  | {
+      type: "dragging";
+      downX: number;
+      downY: number;
+      lastMoveX: number;
+      lastMoveY: number;
+      path: number[];
+      timerId?: number;
+    };
 
 export class PencilTool extends Tool<SupportsPencilTool> {
   #state: ToolState = { type: "idle" };
@@ -34,13 +48,10 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     this.notifyChanged();
   }
 
-  private get resolvedColor() {
-    return this.#erase ? TRANSPARENT : this.editor.color;
-  }
-
   get diameter() {
     return this.#diameter;
   }
+
   set diameter(value: number) {
     this.#diameter = clamp(value, DIAMETER_MIN, DIAMETER_MAX);
     this.notifyChanged();
@@ -67,40 +78,60 @@ export class PencilTool extends Tool<SupportsPencilTool> {
   }
 
   onPointerMove(x: number, y: number, _event: PointerEvent) {
-    if (this.#state.type === "idle") {
+    const state = this.#state;
+
+    if (state.type === "idle") {
       return;
     }
 
-    if (this.#state.type === "down") {
-      this.#state = { type: "dragging", lastMoveX: x, lastMoveY: y };
+    if (state.type === "down") {
+      this.#state = {
+        type: "dragging",
+        downX: state.downX,
+        downY: state.downY,
+        lastMoveX: x,
+        lastMoveY: y,
+        path: [x, y],
+      };
     }
 
-    if (this.#state.type === "dragging") {
-      const { lastMoveX, lastMoveY } = this.#state;
-
-      this.#drawCircle(lastMoveX, lastMoveY);
-
+    if (state.type === "dragging") {
+      const { lastMoveX, lastMoveY } = state;
       let currentX = lastMoveX;
       let currentY = lastMoveY;
-
       while (true) {
         const deltaX = x - currentX;
         const deltaY = y - currentY;
+
         const distance = deltaX ** 2 + deltaY ** 2;
-        if (distance < 1) {
-          break;
-        }
+        if (distance < 1) break;
 
         currentX += deltaX / distance;
         currentY += deltaY / distance;
 
+        state.path.push(currentX, currentY);
         this.#drawCircle(currentX, currentY);
       }
 
+      state.path.push(x, y);
+      this.#drawCircle(x, y);
+
       this.tileset.invalidate();
 
-      this.#state.lastMoveX = currentX;
-      this.#state.lastMoveY = currentY;
+      state.lastMoveX = currentX;
+      state.lastMoveY = currentY;
+
+      // TODO: this should really depend on screenspace distance, since it is meant to represent the user no longer moving the pointer, with some tolerance
+      if (this.#pointsApproximatelyEqual(x, y, lastMoveX, lastMoveY)) {
+        state.timerId = window.setTimeout(() => {
+          this.#fillPolygon(state.path);
+          this.tileset.invalidate();
+          this.tileset.flushBuffer();
+          this.#state = { type: "idle" };
+        }, FILL_DELAY_MS);
+      } else {
+        window.clearTimeout(state.timerId);
+      }
     }
   }
 
@@ -109,9 +140,15 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     this.tileset.flushBuffer();
   }
 
+  #pointsApproximatelyEqual(x1: number, y1: number, x2: number, y2: number) {
+    return (x2 - x1) ** 2 + (y2 - y1) ** 2 < 1;
+  }
+
   #drawCircle(cx: number, cy: number) {
+    const color = this.erase ? TRANSPARENT : this.editor.color;
+
     if (this.diameter === 1) {
-      this.tileset.setBufferPixel(cx, cy, this.resolvedColor);
+      this.tileset.setBufferPixel(cx, cy, color);
       return;
     }
 
@@ -121,7 +158,37 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     for (let y = -radius; y <= radius; y++) {
       for (let x = -radius; x <= radius; x++) {
         if (x ** 2 + y ** 2 <= sqRadius) {
-          this.tileset.setBufferPixel(cx + x, cy + y, this.resolvedColor);
+          this.tileset.setBufferPixel(cx + x, cy + y, color);
+        }
+      }
+    }
+  }
+
+  #isPointInPolygon(x: number, y: number, points: readonly number[]): boolean {
+    let inside = false;
+    for (let i = 2, j = points.length - 2; i < points.length; j = i, i += 2) {
+      const x1 = points[j];
+      const y1 = points[j + 1];
+      const x2 = points[i];
+      const y2 = points[i + 1];
+      if ((y1 <= y && y < y2) || (y2 <= y && y < y1)) {
+        const t = (y - y1) / (y2 - y1);
+        if (x + 0.5 < x1 + t * (x2 - x1)) {
+          inside = !inside;
+        }
+      }
+    }
+    return inside;
+  }
+
+  #fillPolygon(points: readonly number[]) {
+    const color = this.erase ? TRANSPARENT : this.editor.color;
+    const { width, height } = this.tileset;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (this.#isPointInPolygon(x, y, points)) {
+          this.tileset.setBufferPixel(x, y, color);
         }
       }
     }
