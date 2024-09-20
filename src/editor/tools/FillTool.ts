@@ -28,8 +28,14 @@ export class FillTool extends Tool<SupportsFillTool> {
     if (colorsMatch(color, targetColor)) return;
 
     const stack: [number, number][] = [[x, y]];
+    const visited = new Set<string>();
+
     while (stack.length > 0) {
       const [x, y] = stack.pop()!;
+      const key = `${x},${y}`;
+      if (visited.has(key)) continue;
+      visited.add(key);
+
       if (x < 0 || y < 0 || x >= width || y >= height) continue;
 
       const currentColor = tileset.getPixel(x, y);
