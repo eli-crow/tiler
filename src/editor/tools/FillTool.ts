@@ -44,6 +44,9 @@ export class FillTool extends Tool<SupportsFillTool> {
       tileset.setBufferPixel(x, y, color);
       stack.push([x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]);
     }
+
     tileset.invalidate();
+
+    tileset.flushBuffer();
   }
 }
