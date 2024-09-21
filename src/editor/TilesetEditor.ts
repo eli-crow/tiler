@@ -35,6 +35,7 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
       width: "100%",
       height: "100%",
     });
+    window.addEventListener("keydown", this.#handleKeyDown);
     this.#canvas.addEventListener("pointerdown", this.#handlePointerDown);
     this.#canvas.addEventListener("pointermove", this.#handlePointerMove);
     this.#canvas.addEventListener("pointerup", this.#handlePointerUp);
@@ -369,10 +370,14 @@ export class TilesetEditor<Tileset extends BaseTileset = BaseTileset, SupportedT
     this.#draw();
   };
 
+  #handleKeyDown = (event: KeyboardEvent) => {
+    this.#tool.onKeyDown(event);
+  };
+
   #handlePointerDown = (event: PointerEvent) => {
     if (this.#isGesturing) return;
-    const { x, y } = this.#getTilesetPixelFromEvent(event);
     this.#storeUndo();
+    const { x, y } = this.#getTilesetPixelFromEvent(event);
     this.#tool.onPointerDown(x, y, event);
   };
 

@@ -17,6 +17,7 @@ export abstract class Tool<Requirements = object> {
   onPointerDown(_x: number, _y: number, _e: MouseEvent) {}
   onPointerMove(_x: number, _y: number, _e: MouseEvent) {}
   onPointerUp(_x: number, _y: number, _e: MouseEvent) {}
+  onKeyDown(_e: KeyboardEvent) {}
   readonly on = this.#emitter.on.bind(this.#emitter);
   readonly once = this.#emitter.once.bind(this.#emitter);
   readonly off = this.#emitter.off.bind(this.#emitter);

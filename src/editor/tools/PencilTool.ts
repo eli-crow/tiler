@@ -65,6 +65,14 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     return isSupportsPencilTool(tileset);
   }
 
+  onKeyDown(e: KeyboardEvent): void {
+    const state = this.#state;
+    if (state.type !== "dragging") return;
+    if (e.shiftKey && this.#pointsApproximatelyEqual(state.lastMoveX, state.lastMoveY, state.downX, state.downY)) {
+      this.#fillPendingPath();
+    }
+  }
+
   onPointerDown(x: number, y: number, event: PointerEvent) {
     if (event.button !== 0) {
       return;
@@ -121,10 +129,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
       state.lastMoveY = currentY;
 
       if (event.shiftKey && this.#pointsApproximatelyEqual(x, y, state.downX, state.downY)) {
-        this.#fillPolygon(state.path);
-        this.tileset.invalidate();
-        this.tileset.flushBuffer();
-        this.#state = { type: "idle" };
+        this.#fillPendingPath();
       }
     }
   }
@@ -132,6 +137,15 @@ export class PencilTool extends Tool<SupportsPencilTool> {
   onPointerUp(_x: number, _y: number, _event: PointerEvent) {
     this.#state = { type: "idle" };
     this.tileset.flushBuffer();
+  }
+
+  #fillPendingPath() {
+    if (this.#state.type !== "dragging") return;
+
+    this.#fillPolygon(this.#state.path);
+    this.tileset.invalidate();
+    this.tileset.flushBuffer();
+    this.#state = { type: "idle" };
   }
 
   #pointsApproximatelyEqual(x1: number, y1: number, x2: number, y2: number) {
@@ -160,11 +174,12 @@ export class PencilTool extends Tool<SupportsPencilTool> {
 
   #isPointInPolygon(x: number, y: number, points: readonly number[]): boolean {
     let inside = false;
-    for (let i = 2, j = points.length - 2; i < points.length; j = i, i += 2) {
+    for (let i = 0, j = points.length - 2; i < points.length; j = i, i += 2) {
       const x1 = points[j];
       const y1 = points[j + 1];
       const x2 = points[i];
       const y2 = points[i + 1];
+
       if ((y1 <= y && y < y2) || (y2 <= y && y < y1)) {
         const t = (y - y1) / (y2 - y1);
         if (x + 0.5 < x1 + t * (x2 - x1)) {
@@ -172,6 +187,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
         }
       }
     }
+
     return inside;
   }
 
