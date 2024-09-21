@@ -5,7 +5,6 @@ import { Tool } from "./Tool";
 
 const DIAMETER_MIN = 1;
 const DIAMETER_MAX = 100;
-const FILL_DELAY_MS = 1_500;
 
 export type SupportsPencilTool = {
   setBufferPixel(x: number, y: number, color: RGBA): void;
@@ -77,7 +76,7 @@ export class PencilTool extends Tool<SupportsPencilTool> {
     }
   }
 
-  onPointerMove(x: number, y: number, _event: PointerEvent) {
+  onPointerMove(x: number, y: number, event: PointerEvent) {
     const state = this.#state;
 
     if (state.type === "idle") {
@@ -121,16 +120,11 @@ export class PencilTool extends Tool<SupportsPencilTool> {
       state.lastMoveX = currentX;
       state.lastMoveY = currentY;
 
-      // TODO: this should really depend on screenspace distance, since it is meant to represent the user no longer moving the pointer, with some tolerance
-      if (this.#pointsApproximatelyEqual(x, y, lastMoveX, lastMoveY)) {
-        state.timerId = window.setTimeout(() => {
-          this.#fillPolygon(state.path);
-          this.tileset.invalidate();
-          this.tileset.flushBuffer();
-          this.#state = { type: "idle" };
-        }, FILL_DELAY_MS);
-      } else {
-        window.clearTimeout(state.timerId);
+      if (event.shiftKey && this.#pointsApproximatelyEqual(x, y, state.downX, state.downY)) {
+        this.#fillPolygon(state.path);
+        this.tileset.invalidate();
+        this.tileset.flushBuffer();
+        this.#state = { type: "idle" };
       }
     }
   }
